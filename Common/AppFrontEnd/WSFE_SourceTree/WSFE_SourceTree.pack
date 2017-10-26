@@ -1,0 +1,21 @@
+﻿#include @"ws_manager\common\AppFrontEnd\WSFE_SourceTree\WSFE_SourceTree.ph"
+
+% privately used packages
+#include @"pfc\windowsApi\Shell_api\Shell_api.ph"
+#include @"pfc\log\Log.ph"
+#include @"pfc\string\string.ph"
+#include @"pfc\list\list.ph"
+#include @"pfc\namedValue\namedValue.ph"
+#include @"pfc\gui\ImageList\ImageList.ph"
+#include @"pfc\gui\gui.ph"
+#include @"pfc\gui\controls\TreeControl\treeModel_std\treeModel_std.ph"
+#include @"pfc\gui\controls\TreeControl\TreeControl.ph"
+#include @"ws_manager\common\AppFrontEnd\WSFE_Connector\WSFE_Connector.ph"
+#include @"pfc\core.ph"
+
+% private interfaces
+
+% private classes
+
+% implementations
+#include @"ws_manager\common\AppFrontEnd\WSFE_SourceTree\WSFE_SourceTree.pro"

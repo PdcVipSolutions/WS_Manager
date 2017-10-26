@@ -1,0 +1,29 @@
+﻿#include @"WS_manager\WSM_http_CS\WSM_http_frontend\WorkSpaceManager\WorkSpaceManager.ph"
+
+% privately used packages
+#include @"ws_manager\common\http_Client\http_Client.ph"
+#include @"ws_manager\common\AppFrontEnd\WSFE_Connector\WSFE_Connector.ph"
+#include @"pfc\gui\messageLoop\messageLoop.ph"
+#include @"pfc\vpi\vpi.ph"
+#include @"pfc\web\json\json.ph"
+
+#include @"pfc\windowsApi\httpServer_api\httpServer_api.ph"
+#include @"pfc\web\http\httpServerApi\requestQueue_file\requestQueue_file.ph"
+#include @"pfc\web\http\httpServerApi\httpServerApi.ph"
+#include @"pfc\web\http\httpServerApi\requestQueue_rpc\requestQueue_rpc.ph"
+#include @"pfc\communications\ioCompletionPort\ioCompletionPort.ph"
+#include @"pfc\log\streamAppender\streamAppender.ph"
+#include @"pfc\log\LogConfig\logconfig.ph"
+#include @"ws_manager\common\AppFrontEnd\WSFE_Form\WSFE_Form.ph"
+#include @"pfc\windowsApi\systemInformation_api\systemInformation_api.ph"
+#include @"pfc\log\Log.ph"
+#include @"ws_manager\common\AppFrontEnd\WS_FrontEnd\WS_FrontEnd.ph"
+#include @"ws_manager\common\WS_EventManager\WS_EventManager.ph"
+#include @"pfc\core.ph"
+
+% private interfaces
+
+% private classes
+
+% implementations
+#include @"WS_manager\WSM_http_CS\WSM_http_frontend\WorkSpaceManager\WorkSpaceManager.pro"

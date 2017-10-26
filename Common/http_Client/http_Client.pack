@@ -1,0 +1,24 @@
+﻿#include @"ws_manager\common\http_Client\http_Client.ph"
+
+% privately used packages
+#include @"Packs\Logic\trace\trace.ph"
+%#include @"Packs\Logic\Web\VipRpc\xmlHttpSink\xmlHttpSink.ph"
+#include @"Packs\Logic\Web\xmlHttpEventSink\xmlHttpEventSink.ph"
+#include @"WS_manager\Common\WS_EventManager\WS_EventManager.ph"
+#include @"pfc\web\http\http.ph"
+
+#include @"pfc\stream\stream.ph"
+#include @"pfc\com\exceptionHandling\exceptionHandling.ph"
+#include @"pfc\exception\exception.ph"
+#include @"pfc\windowsApi\com_api\comDomains\comDomains.ph"
+#include @"pfc\windowsApi\msXML_api\msXML_HTTP_api\msxml_HTTP_api.ph"
+#include @"pfc\string\string.ph"
+#include @"pfc\web\json\jsonRpc\jsonRpc.ph"
+#include @"pfc\web\json\json.ph"
+
+% private interfaces
+
+% private classes
+
+% implementations
+#include @"ws_manager\common\http_Client\http_Client.pro"

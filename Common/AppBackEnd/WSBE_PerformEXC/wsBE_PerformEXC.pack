@@ -1,0 +1,15 @@
+﻿#include @"ws_manager\common\AppBackEnd\WSBE_PerformEXC\WSBE_PerformEXC.ph"
+
+% privately used packages
+#include @"pfc\string\string.ph"
+#include @"pfc\fileSystem\fileSystem.ph"
+#include @"pfc\application\useExe\useExe.ph"
+#include @"pfc\stream\stream.ph"
+#include @"pfc\core.ph"
+
+% private interfaces
+
+% private classes
+
+% implementations
+#include @"ws_manager\common\AppBackEnd\WSBE_PerformEXC\WSBE_PerformEXC.pro"

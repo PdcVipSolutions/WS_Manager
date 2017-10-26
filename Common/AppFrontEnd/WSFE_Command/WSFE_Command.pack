@@ -1,0 +1,24 @@
+﻿#include @"ws_manager\common\AppFrontEnd\WSFE_Command\WSFE_Command.ph"
+
+% privately used packages
+#include @"pfc\gui\commands\checkCommand\checkCommand.ph"
+#include @"pfc\string\string.ph"
+#include @"pfc\fileSystem\fileSystem.ph"
+#include @"ws_manager\common\AppFrontEnd\WSFE_WinUI\WSFE_Settings\WSFE_Settings.ph"
+#include @"pfc\vpi\vpi.ph"
+#include @"pfc\gui\controls\ribbonControl\ribbonDesignerDlg\ribbonDesignerDlg.ph"
+#include @"pfc\boolean\boolean.ph"
+#include @"ws_manager\common\AppFrontEnd\WSFE_Connector\WSFE_Connector.ph"
+#include @"pfc\core.ph"
+
+% private interfaces
+
+% private classes
+
+% implementations
+#include @"ws_manager\common\AppFrontEnd\WSFE_Command\MoveRemoveCommand.pro"
+#include @"ws_manager\common\AppFrontEnd\WSFE_Command\WSFE_Command.pro"
+
+#include @"ws_manager\common\AppFrontEnd\WSFE_Command\PerformSourceCommand.pro"
+#include @"ws_manager\common\AppFrontEnd\WSFE_Command\SourceContentCommand.pro"
+#include @"ws_manager\common\AppFrontEnd\WSFE_Command\WorkSpaceCommand.pro"

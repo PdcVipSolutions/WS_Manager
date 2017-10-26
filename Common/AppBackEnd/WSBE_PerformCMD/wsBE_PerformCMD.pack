@@ -1,0 +1,13 @@
+﻿#include @"ws_manager\common\AppBackEnd\WSBE_PerformCMD\WSBE_PerformCMD.ph"
+
+% privately used packages
+#include @"pfc\string\string.ph"
+#include @"pfc\fileSystem\fileSystem.ph"
+#include @"pfc\core.ph"
+
+% private interfaces
+
+% private classes
+
+% implementations
+#include @"ws_manager\common\AppBackEnd\WSBE_PerformCMD\WSBE_PerformCMD.pro"

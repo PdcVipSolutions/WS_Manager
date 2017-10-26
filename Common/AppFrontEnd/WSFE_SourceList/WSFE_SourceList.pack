@@ -1,0 +1,20 @@
+﻿#include @"ws_manager\common\AppFrontEnd\WSFE_SourceList\WSFE_SourceList.ph"
+
+% privately used packages
+#include @"pfc\multiThread\monitorQueue\monitorQueue.ph"
+#include @"pfc\vpi\vpiCommonDialogs\vpiCommonDialogs.ph"
+#include @"pfc\windowsApi\Shell_api\Shell_api.ph"
+#include @"pfc\fileSystem\fileSystem.ph"
+#include @"pfc\string\string.ph"
+#include @"pfc\list\list.ph"
+#include @"pfc\resourceIdentifiers.ph"
+#include @"pfc\vpi\vpi.ph"
+#include @"ws_manager\common\AppFrontEnd\WSFE_Connector\WSFE_Connector.ph"
+#include @"pfc\core.ph"
+
+% private interfaces
+
+% private classes
+
+% implementations
+#include @"ws_manager\common\AppFrontEnd\WSFE_SourceList\WSFE_SourceList.pro"

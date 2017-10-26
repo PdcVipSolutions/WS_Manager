@@ -1,0 +1,22 @@
+﻿#include @"ws_manager\common\AppBackEnd\WSBE_Connector\WSBE_Connector.ph"
+
+% privately used packages
+#include @"Packs\Logic\trace\trace.ph"
+#include @"pfc\multiThread\monitorQueue\monitorQueue.ph"
+#include @"WorkSpaceManager\WorkSpaceManager.ph"
+#include @"pfc\multiThread\multiThread.ph"
+#if workSpaceManager::isSolutionMng_app = false #then
+    #include @"pfc\com\exceptionHandling\exceptionHandling.ph"
+    #include @"pfc\web\json\jsonRpc\jsonRpc.ph"
+    #include @"pfc\windowsApi\msXML_api\msXML_HTTP_api\msxml_HTTP_api.ph"
+    #include @"pfc\web\json\json.ph"
+#endif
+#include @"pfc\string\string.ph"
+#include @"pfc\core.ph"
+
+% private interfaces
+
+% private classes
+
+% implementations
+#include @"ws_manager\common\AppBackEnd\WSBE_Connector\WSBE_Connector.pro"

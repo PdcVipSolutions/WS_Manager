@@ -1,0 +1,19 @@
+﻿#include @"ws_manager\common\AppFrontEnd\WS_FrontEnd\WS_FrontEnd.ph"
+
+% privately used packages
+#include @"pfc\log\Log.ph"
+#include @"pfc\vpi\vpi.ph"
+#include @"ws_manager\common\AppFrontEnd\WSFE_Connector\WSFE_Connector.ph"
+#include @"ws_manager\common\AppFrontEnd\WSFE_Form\WSFE_Form.ph"
+#include @"ws_manager\common\AppFrontEnd\WSFE_Tasks\WSFE_Tasks.ph"
+#include @"ws_manager\common\AppFrontEnd\WSBE_Messages\WSBE_Messages.ph"
+#include @"pfc\gui\messageLoop\messageLoop.ph"
+#include @"pfc\gui\gui.ph"
+#include @"pfc\core.ph"
+
+% private interfaces
+
+% private classes
+
+% implementations
+#include @"ws_manager\common\AppFrontEnd\WS_FrontEnd\WS_FrontEnd.pro"

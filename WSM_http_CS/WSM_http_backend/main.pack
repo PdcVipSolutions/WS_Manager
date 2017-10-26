@@ -1,0 +1,28 @@
+﻿#include @"main.ph"
+
+% privately used packages
+#include @"pfc\commandLineParser\commandLineParser.ph"
+#include @"pfc\multiThread\threadpool\threadpool.ph"
+#include @"WorkSpaceManager\WorkSpaceManager.ph"
+#include @"ws_manager\common\AppBackEnd\WS_BackEnd\WS_BackEnd.ph"
+#include @"ws_manager\common\WS_EventManager\WS_EventManager.ph"
+#include @"pfc\windowsApi\Odbc_api\Odbc_api.ph"
+#include @"pfc\odbc\Odbc.ph"
+#include @"pfc\string\string.ph"
+#include @"pfc\windowsApi\httpServer_api\httpServer_api.ph"
+#include @"pfc\application\Exe\exe.ph"
+#include @"pfc\multiThread\multiThread.ph"
+#include @"pfc\web\http\httpServerApi\requestQueue_file\requestQueue_file.ph"
+#include @"pfc\web\http\httpServerApi\httpServerApi.ph"
+#include @"pfc\web\http\httpServerApi\requestQueue_rpc\requestQueue_rpc.ph"
+#include @"pfc\communications\ioCompletionPort\ioCompletionPort.ph"
+#include @"pfc\console\console.ph"
+#include @"pfc\core.ph"
+
+% private interfaces
+
+% private classes
+
+% implementations
+#include @"main.pro"
+

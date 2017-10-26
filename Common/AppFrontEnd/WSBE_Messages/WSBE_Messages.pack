@@ -1,0 +1,26 @@
+﻿#include @"ws_manager\common\AppFrontEnd\WSBE_Messages\WSBE_Messages.ph"
+
+% privately used packages
+#include @"Packs\Logic\trace\trace.ph"
+#include @"ws_manager\common\AppFrontEnd\WSFE_Connector\WSFE_Connector.ph"
+#include @"ws_manager\common\AppFrontEnd\WS_FrontEnd\WS_FrontEnd.ph"
+#include @"pfc\fileSystem\fileSystem.ph"
+#include @"pfc\vpi\vpiDlgDir\vpiDlgDir.ph"
+
+#include @"ws_manager\common\WS_EventManager\WS_EventManager.ph"
+#include @"pfc\string\string.ph"
+#include @"pfc\windowsApi\Shell_api\Shell_api.ph"
+#include @"pfc\gui\errorPresentationDialog\errorPresentationDialog.ph"
+
+#include @"pfc\stream\stream.ph"
+#include @"pfc\vpi\vpiCommonDialogs\vpiCommonDialogs.ph"
+#include @"pfc\list\list.ph"
+#include @"pfc\core.ph"
+#include @"pfc\event\event.ph"
+
+% private interfaces
+
+% private classes
+
+% implementations
+#include @"ws_manager\common\AppFrontEnd\WSBE_Messages\WSBE_Messages.pro"

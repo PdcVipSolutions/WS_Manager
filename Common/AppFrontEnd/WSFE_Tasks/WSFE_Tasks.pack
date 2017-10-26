@@ -1,0 +1,28 @@
+﻿#include @"ws_manager\common\AppFrontEnd\WSFE_Tasks\WSFE_Tasks.ph"
+
+% privately used packages
+#include @"Packs\Logic\trace\trace.ph"
+#include @"pfc\multiThread\monitorQueue\monitorQueue.ph"
+#include @"pfc\application\useExe\useExe.ph"
+#include @"ws_manager\common\AppFrontEnd\WSFE_WinUI\WSFE_Settings\WSFE_Settings.ph"
+#include @"pfc\string\string.ph"
+#include @"pfc\vpi\vpiDlgDir\vpiDlgDir.ph"
+#include @"pfc\log\Log.ph"
+#include @"pfc\log\streamAppender\streamAppender.ph"
+#include @"pfc\application\useDll\usedll.ph"
+#include @"pfc\resourceIdentifiers.ph"
+#include @"pfc\namedValue\namedValue.ph"
+#include @"packs\gui\AboutDialog\AboutDialog.ph"
+#include @"pfc\list\list.ph"
+#include @"pfc\vpi\vpiCommonDialogs\vpiCommonDialogs.ph"
+#include @"ws_manager\common\AppFrontEnd\WSFE_Connector\WSFE_Connector.ph"
+#include @"pfc\fileSystem\fileSystem.ph"
+
+#include @"pfc\core.ph"
+
+% private interfaces
+
+% private classes
+
+% implementations
+#include @"ws_manager\common\AppFrontEnd\WSFE_Tasks\WSFE_Tasks.pro"

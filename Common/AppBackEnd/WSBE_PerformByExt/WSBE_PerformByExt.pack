@@ -1,0 +1,22 @@
+﻿#include @"ws_manager\common\AppBackEnd\WSBE_PerformByExt\WSBE_PerformByExt.ph"
+
+% privately used packages
+#include @"pfc\log\Log.ph"
+#include @"pfc\namedValue\namedValue.ph"
+#include @"ws_manager\common\AppBackEnd\WSBE_PerformCMD\wsBE_PerformCMD.ph"
+#include @"ws_manager\common\AppBackEnd\WSBE_PerformVIP\WSBE_PerformVIP.ph"
+#include @"packs\logic\SpbXmlLiteSupport\SpbXmlLiteSupport.ph"
+#include @"pfc\web\xmlLite\xmlLite.ph"
+#include @"packs\logic\XmlDocument\XmlDocument.ph"
+#include @"pfc\string\string.ph"
+#include @"pfc\fileSystem\fileSystem.ph"
+#include @"pfc\application\useExe\useExe.ph"
+#include @"pfc\stream\stream.ph"
+#include @"pfc\core.ph"
+
+% private interfaces
+
+% private classes
+
+% implementations
+#include @"ws_manager\common\AppBackEnd\WSBE_PerformByExt\WSBE_PerformByExt.pro"

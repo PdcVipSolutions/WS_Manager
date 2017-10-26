@@ -1,0 +1,29 @@
+﻿#include @"ws_manager\common\AppBackEnd\WSBE_Performer\WSBE_Performer.ph"
+
+% privately used packages
+#include @"Packs\Logic\trace\trace.ph"
+#include @"pfc\log\Log.ph"
+#include @"ws_manager\common\AppBackEnd\WSBE_PerformByExt\WSBE_PerformByExt.ph"
+#include @"pfc\time\time.ph"
+#include @"pfc\namedValue\namedValue.ph"
+#include @"pfc\list\list.ph"
+#include @"pfc\windowsApi\string_api\string_api.ph"
+#include @"pfc\registry\registry.ph"
+#include @"ws_manager\common\AppBackEnd\WSBE_PerformCMD\wsBE_PerformCMD.ph"
+#include @"pfc\vpi\vpi.ph"
+#include @"ws_manager\common\AppBackEnd\WSBE_PerformVIP\WSBE_PerformVIP.ph"
+#include @"pfc\exception\exceptionDump\exceptionDump.ph"
+#include @"pfc\string\string.ph"
+#include @"pfc\fileSystem\fileSystem.ph"
+#include @"pfc\application\useExe\useExe.ph"
+#include @"ws_manager\common\AppBackEnd\WSBE_Connector\WSBE_Connector.ph"
+#include @"packs\logic\XmlDocument\XmlDocument.ph"
+#include @"ws_manager\common\WS_EventManager\WS_EventManager.ph"
+#include @"pfc\core.ph"
+
+% private interfaces
+
+% private classes
+
+% implementations
+#include @"ws_manager\common\AppBackEnd\WSBE_Performer\WSBE_Performer.pro"

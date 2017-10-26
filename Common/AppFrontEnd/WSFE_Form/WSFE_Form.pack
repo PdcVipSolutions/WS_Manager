@@ -1,0 +1,54 @@
+﻿#requires @"ws_manager\common\AppFrontEnd\WSFE_Form\WSFE_Form.frm"
+
+% own pack
+#include @"ws_manager\common\AppFrontEnd\WSFE_Form\WSFE_Form.ph"
+
+% privately used packages
+#include @"pfc\log\Log.ph"
+#include @"WorkSpaceManager\WorkSpaceManager.ph"
+#include @"pfc\gui\commands\checkCommand\checkCommand.ph"
+#include @"pfc\namedValue\namedValue.ph"
+#include @"pfc\gui\controls\groupBox\groupBox.ph"
+#include @"ws_manager\common\AppFrontEnd\WSFE_Command\WSFE_Command.ph"
+#include @"ws_manager\common\AppFrontEnd\WSFE_SourceTree\WSFE_SourceTree.ph"
+#include @"ws_manager\common\AppFrontEnd\WSBE_Messages\WSBE_Messages.ph"
+#include @"ws_manager\common\AppFrontEnd\WSFE_Connector\WSFE_Connector.ph"
+#include @"packs\gui\FormSplittedLayout\FormSplittedLayout.ph"
+#include @"pfc\gui\controls\splitterControl\splitterControl.ph"
+#include @"pfc\gui\controls\TreeControl\treeModel_std\treeModel_std.ph"
+#include @"pfc\gui\controls\TreeControl\TreeControl.ph"
+#include @"Packs\Gui\AboutDialog\AboutDialog.ph"
+#include @"pfc\application\Exe\exe.ph"
+#include @"pfc\boolean\boolean.ph"
+#include @"pfc\core.ph"
+#include @"pfc\event\event.ph"
+#include @"pfc\fileSystem\fileSystem.ph"
+#include @"pfc\gui\controls\listViewControl\listViewControl.ph"
+#include @"pfc\gui\controls\messageControl\messageControl.ph"
+#include @"pfc\gui\controls\progressBarControl\progressBarControl.ph"
+#include @"pfc\gui\controls\ribbonControl\ribbonControl.ph"
+#include @"pfc\gui\controls\splitControl\splitControl.ph"
+#include @"pfc\gui\controls\statusBarControl\statusBarControl.ph"
+#include @"pfc\gui\gdiplus\gdiplus.ph"
+#include @"pfc\gui\gui.ph"
+#include @"pfc\gui\ImageList\ImageList.ph"
+#include @"pfc\gui\toolTip\toolTip.ph"
+#include @"pfc\list\list.ph"
+#include @"pfc\memory\memory.ph"
+#include @"pfc\resourceIdentifiers.ph"
+#include @"pfc\stream\stream.ph"
+#include @"pfc\string\string.ph"
+#include @"pfc\vpi\vpi.ph"
+#include @"pfc\vpi\vpiCommonDialogs\vpiCommonDialogs.ph"
+#include @"pfc\vpi\vpiDomains\vpiDomains.ph"
+#include @"pfc\windowsApi\fileSystem_api\fileSystem_api.ph"
+#include @"pfc\windowsApi\gui_api\gui_api.ph"
+#include @"pfc\windowsApi\Shell_api\Shell_api.ph"
+
+% private interfaces
+
+% private classes
+
+% implementations
+#include @"ws_manager\common\AppFrontEnd\WSFE_Form\WSFE_Form.pro"
+

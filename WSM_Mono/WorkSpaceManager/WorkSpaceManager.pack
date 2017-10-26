@@ -1,0 +1,18 @@
+﻿#include @"ws_manager\wsm_mono\WorkSpaceManager\WorkSpaceManager.ph"
+
+% privately used packages
+#include @"pfc\gui\messageLoop\messageLoop.ph"
+#include @"ws_manager\common\AppFrontEnd\WSFE_Form\WSFE_Form.ph"
+#include @"ws_manager\common\AppBackEnd\WS_BackEnd\WS_BackEnd.ph"
+#include @"pfc\log\streamAppender\streamAppender.ph"
+#include @"pfc\windowsApi\systemInformation_api\systemInformation_api.ph"
+#include @"ws_manager\common\AppFrontEnd\WS_FrontEnd\WS_FrontEnd.ph"
+#include @"ws_manager\common\WS_EventManager\WS_EventManager.ph"
+#include @"pfc\core.ph"
+
+% private interfaces
+
+% private classes
+
+% implementations
+#include @"ws_manager\wsm_mono\WorkSpaceManager\WorkSpaceManager.pro"

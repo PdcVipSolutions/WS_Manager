@@ -1,0 +1,15 @@
+﻿#include @"ws_manager\common\AppBackEnd\Ws_BackEnd\Ws_BackEnd.ph"
+
+% privately used packages
+#include @"ws_manager\common\AppBackEnd\WSBE_Options\WSBE_Options.ph"
+#include @"ws_manager\common\AppBackEnd\WSBE_Performer\WSBE_Performer.ph"
+#include @"ws_manager\common\AppBackEnd\WSBE_Tasks\WSBE_Tasks.i"
+#include @"pfc\fileSystem\fileSystem.ph"
+#include @"pfc\core.ph"
+
+% private interfaces
+
+% private classes
+
+% implementations
+#include @"ws_manager\common\AppBackEnd\Ws_BackEnd\Ws_BackEnd.pro"

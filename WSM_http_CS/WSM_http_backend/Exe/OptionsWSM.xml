@@ -27,6 +27,9 @@
   <fe_options>
     <group title="wsFE_Tasks">
       <rbState path="[namedValue(&quot;reset&quot;,boolean(true)),namedValue(&quot;local&quot;,boolean(false))]" />
+      <work_space path="C:\Users\Виктор Юхтенко\Documents\GitHub\SpbRSolutions802\SpbProjects\WS_Manager\WSM_http_CS\WSM_http_frontend\Exe" />
+      <source path="C:\Users\Виктор Юхтенко\Documents\GitHub\SpbRSolutions802\SpbProjects\WS_Manager\WSM_http_CS\WSM_http_frontend\Exe" />
+      <folder path="C:\Users\Виктор Юхтенко\Documents\GitHub\SpbRSolutions802\SpbProjects\WS_Manager\WSM_http_CS\WSM_http_frontend\Exe" />
     </group>
     <group title="wsFE_Form">
       <nodeIDList path="[namedValue(&quot;work_space&quot;,string(&quot;SpbRSolutions&quot;)),namedValue(&quot;group&quot;,string(&quot;SpbProjects&quot;)),namedValue(&quot;group&quot;,string(&quot;WSM&quot;))]" />

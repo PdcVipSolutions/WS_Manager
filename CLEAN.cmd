@@ -2,7 +2,7 @@ if exist dd.bat del dd.bat
 chcp 1251
 dir /s/b vip7*.dll >>dd.bat
 dir /s/b *.obj >>dd.bat
-dir /s/b *.exe >>dd.bat
+rem dir /s/b *.exe >>dd.bat
 dir /s/b *.map >>dd.bat
 dir /s/b *.res >>dd.bat
 dir /s/b *.options >>dd.bat

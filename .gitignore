@@ -1,3 +1,7 @@
 
 *.env
 WSM_http_CS/WSM_http_backend/WSMbackend.env
+*.env
+WSM_http_CS/WSM_http_backend/WSMbackend.env
+WSM_http_CS/WSM_http_frontend/WSMfrontend.env
+WSM_Mono/WorkSpaceManager.env

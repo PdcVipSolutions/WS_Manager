@@ -56,7 +56,6 @@
     <item-map filename="$(ProDir)pfc\com\com.pack" />
     <item-map filename="$(ProDir)pfc\com\comSupport\comSupport.pack" />
     <item-map filename="$(ProDir)pfc\com\exceptionHandling\exceptionHandling.pack" />
-    <item-map filename="$(ProDir)pfc\communications\ioCompletionPort\ioCompletionPort.pack" />
     <item-map filename="$(ProDir)pfc\communications\socket\socket.pack" />
     <item-map filename="$(ProDir)pfc\core.pack" />
     <item-map filename="$(ProDir)pfc\cryptography\cryptography.pack" />

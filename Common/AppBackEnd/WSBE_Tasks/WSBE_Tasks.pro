@@ -21,7 +21,7 @@ clauses
 
 clauses
     wsFE_Started(TaskQueueObj):-
-        CurrentLng = ws_Events():currentLng,
+        CurrentLng = ws_Events():currentLng_P:value,
         notify(wsBE_StartedFE, [namedValue(CurrentLng, string(ws_Events():getLanguageWSMText()))],TaskQueueObj).
 
 clauses
@@ -32,15 +32,15 @@ clauses
 clauses
     saveWorkSpaceAs(FullNameSpaceFileName) :-
         wsBE_XmlDocument() = XML_Doc,
-        XML_Doc:root_P:modifyAttribute("ws_File", FullNameSpaceFileName),
+        XML_Doc:root_P:modifyAttribute(wsFile_C, FullNameSpaceFileName),
         if unknownName_C = XML_Doc:root_P:attribute(title_C) then
-            XML_Doc:root_P:modifyAttribute("title", filename::getName(FullNameSpaceFileName))
+            XML_Doc:root_P:modifyAttribute(title_C, filename::getName(FullNameSpaceFileName))
         end if,
         OutputStream = outputStream_file::create(FullNameSpaceFileName, stream::binary),
         XML_Doc:saveXml(OutputStream).
 
 clauses
-    create_WorkSpace(FullWorkSpaceName,TaskQueueObj) :-
+    create_WorkSpace(FullWorkSpaceName, TaskQueueObj) :-
         wsFile_V := FullWorkSpaceName,
         if "wsm" = filename::getExtension(FullWorkSpaceName) then
             Name = filename::getName(FullWorkSpaceName)
@@ -52,15 +52,15 @@ clauses
         XML_Doc:codePage_P := utf8,
         XML_Doc:indent_P := true,
         XML_Doc:xmlStandalone_P := xmlLite::yes,
-        XML_Doc:root_P:addAttribute("ws_File", wsFile_V),
-        XML_Doc:root_P:addAttribute("title", Name),
+        XML_Doc:root_P:addAttribute(wsFile_C, wsFile_V),
+        XML_Doc:root_P:addAttribute(title_C, Name),
         saveWorkSpace(),
         notify(wsBE_SetApplicationTitle_C, [namedValue("wsFileName", string(wsFile_V)), namedValue("readOnly", boolean(false))],TaskQueueObj),
         XmlNodeTree = XML_Doc:getNodeTree(),
         XmlTermTree = mapXmlObjTree2xmlTermTree(XmlNodeTree),
         notify(wsBE_Created_C, [namedValue("", string(toString(XmlTermTree)))],TaskQueueObj).
 
-    open_WorkSpace(FullNameSpaceName,TaskQueueObj) :-
+    open_WorkSpace(FullNameSpaceName, TaskQueueObj) :-
         wsFile_V := FullNameSpaceName,
         !,
         XmlWorkSpace = inputStream_file::openFile(FullNameSpaceName, stream::binary),
@@ -68,6 +68,7 @@ clauses
         spbXmlLigntSupport::read(XmlWorkSpace, XML_Doc),
         XmlWorkSpace:close(),
         file::getFileProperties(wsFile_V, Attributes, _Size, _Creation, _LastAccess, _LastChange),
+        loadProjectWSVariable(XML_Doc),
         notify(wsBE_SetApplicationTitle_C,
             [namedValue("wsFileName", string(wsFile_V)), namedValue("readOnly", boolean(toBoolean(fileSystem_api::readOnly in Attributes)))],TaskQueueObj),
         if UndefinedMacroSymList = tryUndefinedMacroSymbols(XML_Doc) then
@@ -76,7 +77,17 @@ clauses
         loadFolderSources(),
         XmlNodeTree = XML_Doc:getNodeTree(),
         XmlTermTree = mapXmlObjTree2xmlTermTree(XmlNodeTree),
-        notify(wsBE_WSTermTree_C, [namedValue("", string(toString(XmlTermTree)))],TaskQueueObj).
+        notify(wsBE_WSTermTree_C, [namedValue("", string(toString(XmlTermTree)))], TaskQueueObj).
+
+predicates
+    loadProjectWSVariable : (xmlDocument XML_Doc).
+clauses
+    loadProjectWSVariable(XML_Doc):-
+        if WSVFile = XML_Doc:root_P:attribute("wsv") and file::existExactFile(WSVFile) then
+            wSBE_Options():setWSVariableFile(WSVFile)
+        else
+            wSBE_Options():setWSVariableFile("")
+        end if.
 
 facts
     isModifyed : boolean := false.
@@ -111,7 +122,6 @@ clauses
     addNewSources(FolderObj, AddSourceList):-
         foreach NewSourceFile in AddSourceList do
             NewSource = xmlElement::new("",source_C, FolderObj),
-%            NewSource:name_P := source_C,
             NewSource:addAttribute(fileName_C, NewSourceFile),
             FolderObj:addNode(NewSource),
             isModifyed := true
@@ -135,8 +145,25 @@ clauses
     tryUndefinedMacroSymbols(XmlDoc) = UndefinedMacroSymList :-
         ActualPath = getActualPath([]),
         UndefinedMacroSymList =
-            list::removeDuplicates(
-                [ namedvalue(VirtualName, string("")) ||
+            list::append(
+                [namedvalue(WSVName, string(DirValue)) ||
+                wSBE_Options():getVirtualDir_nd(Name, DirValue, FlagVip, _),
+                FlagVip = false,
+                not(directory::existExactDirectory(DirValue)),
+                string::hasPrefixIgnoreCase(Name, "$(", WSVRest),
+                string::splitStringBySeparators(WSVRest, ")", WSVName, _, _)
+                ],
+                list::removeDuplicates(
+                    [namedvalue(VirtualFName, string("")) ||
+                    FolderObj = wsBE_XmlDocument():getNode_nd([root(), self({ (_) }), descendant("*", {(O) :- O:name_P = folder_C})]),
+                    FolderPath = FolderObj:attribute(path_C),
+                    string::hasPrefixIgnoreCase(FolderPath, "$(", FRest),
+                    string::splitStringBySeparators(FRest, ")", VirtualFName, _, _),
+                    not(wSBE_Options():existVirtualName(string::concat("$(", VirtualFName, ")")))
+                    ]
+                ),
+                list::removeDuplicates(
+                    [namedvalue(VirtualName, string("")) ||
                     Source = XmlDoc:getNode_nd(ActualPath),
                     NodeAttr = getNodeAttributes(Source),
                     NodeAttr = [namedValue(nodeID_C, string(source_C)), namedValue(xmlObj_C, _) | SourceParams],
@@ -144,7 +171,9 @@ clauses
                     string::hasPrefixIgnoreCase(File, "$(", Rest),
                     string::splitStringBySeparators(Rest, ")", VirtualName, _, _),
                     not(wSBE_Options():existVirtualName(string::concat("$(", VirtualName, ")")))
-                ]),
+                    ]
+                )
+            ),
         !,
         UndefinedMacroSymList <> [].
 
@@ -152,7 +181,6 @@ clauses
     addMacroSymbolDefinition(namedValue(Name, string(NewDirValue))) :-
         !,
         insertVirtualDir(Name, NewDirValue).
-
     addMacroSymbolDefinition(_) :-
         exception::raise_User("Unexpected Alternative").
 
@@ -178,7 +206,6 @@ clauses
         LabelList = [Label||xmlElement::node(_, ChildElement) = XmlElement:getItem_nd(), list::isMember(ChildElement:name_P,[folder_C,groupNode_C]), Label = ChildElement:attribute(title_C)],
         TitleName = getNewNodeName(unNamed_C, LabelList, 0),
         NewGroup = xmlElement::new("", groupNode_C,XmlElement),
-%        NewGroup:name_P := groupNode_C,
         NewGroup:addAttribute(title_C, TitleName),
         XmlElement:addNode(NewGroup),
         notify(wsBE_NewGroupCreated_C, getNodeAttributes(NewGroup, groupNode_C),TaskQueueObj),
@@ -210,8 +237,7 @@ clauses
                 list::isMember(ChildElement:name_P,[folder_C,groupNode_C]),
                 Label = ChildElement:attribute(title_C)],
         TitleName = getNewNodeName(LastDir, LabelList, 0),
-        NewFolder = xmlElement::new("", folder_C,XmlElement),
-%        NewFolder:name_P := folder_C,
+        NewFolder = xmlElement::new("", folder_C, XmlElement),
         NewFolder:addAttribute(title_C, TitleName),
         NewFolder:addAttribute(path_C, wSBE_Options():getShortFileName(FullFolderName)),
         XmlElement:addNode(NewFolder),
@@ -228,7 +254,8 @@ clauses
     new_Folder(PathListAsString,_TaskQueue) :-
         exception::raise_User(string::format("NewFolder::No path % exists", PathListAsString)).
 
-predicates
+class predicates
+%predicates
     getNewNodeName : (string Name,string* LabelList,integer Index) -> string NewName.
 clauses
     getNewNodeName(Name, LabelList, Index) = NewName :-
@@ -288,7 +315,7 @@ clauses
         notify(wsBE_NodeRemoved_C, NodeAttributes,TaskQueueObj),
         saveWorkSpace().
     removeNode(PathList, Title,_TaskQueueObj) :-
-        exception::raise_User(string::format("RemoveNode::No Node exists for path % and Nodewith Title %", PathList, Title)).
+        exception::raise_User(string::format("RemoveNode: No Node exists for path % and Nodewith Title %", PathList, Title)).
 
 clauses
     moveAbove(SourcePath, TargetPath) :-
@@ -335,7 +362,6 @@ clauses
         ActualPath = [root(), self({ (_) }) | SourcePath],
         tuple(GroupObj, SPath) = wsBE_XmlDocument():getNodeAndPath_nd(ActualPath),
         NewSource = xmlElement::new("",source_C, GroupObj),
-%        NewSource:name_P := source_C,
         NewSource:addAttribute(fileName_C, wSBE_Options():getShortFileName(FileName)),
         GroupObj:addNode(NewSource),
         saveWorkSpace(),
@@ -385,8 +411,7 @@ clauses
             File = directory::getFilesInDirectoryAndSub_nd(FolderName),
                 Ext = string::toLowerCase(fileName::getExtension(File, _Name)),
                 list::isMember(Ext, ExtList),
-            NewSource = xmlElement::new("",source_C, GroupObj),
-%            NewSource:name_P := source_C,
+            NewSource = xmlElement::new("", source_C, GroupObj),
             NewSource:addAttribute(fileName_C, wSBE_Options():getShortFileName(File)),
             GroupObj:addNode(NewSource),
             Attribute=GroupObj:attribute(title_C)
@@ -416,10 +441,10 @@ facts
     runDone_V:integer := 0.
     runFailed_V:integer := 0.
     runNoPath_V:integer := 0.
-    runNoRule_V:integer := 0.
     runTotalCount_V:integer := 0.
 clauses
-    updateNodeContent([_Root | NodePath],TaskQueueObj) :-
+    updateNodeContent([Filter, _Root | NodePath],TaskQueueObj) :-
+        Filter = namedValue("filter", string(FilterStr)),
         !,
         SourcePath = getSourcePath(NodePath),
         ActualPath = getActualPath(SourcePath),
@@ -427,9 +452,13 @@ clauses
         runDone_V := 0,
         runFailed_V := 0,
         runNoPath_V := 0,
-        runNoRule_V := 0,
         foreach
-            Source = wsBE_XmlDocument():getNode_nd(ActualPath)
+            Source = wsBE_XmlDocument():getNode_nd(ActualPath),
+            if FilterList = tryToTerm(string_list, FilterStr) then
+                FileName = Source:tryGetAttribute(fileName_C),
+                Ext = string::toLowerCase(fileName::getExtension(FileName,_Name)),
+                Ext in FilterList
+            end if
         do
             notify(wsBE_UpdateSourceStatus_C, [namedValue("sourceID",string(toString(Source)))|getNodeAttributes(Source)],TaskQueueObj),
             runTotalCount_V := runTotalCount_V + 1,
@@ -440,8 +469,6 @@ clauses
                     runFailed_V := runFailed_V + 1
                 elseif Status = noPathStatus_C then
                     runNoPath_V := runNoPath_V + 1
-                elseif Status = noRuleStatus_C then
-                    runNoRule_V := runNoRule_V + 1
                 end if
             end if
         end foreach,
@@ -451,8 +478,7 @@ clauses
             namedValue(totalCount_C,integer(runTotalCount_V)),
             namedValue(runDone_C,integer(runDone_V)),
             namedValue(runFailed_C,integer(runFailed_V)),
-            namedValue(runNoPath_C,integer(runNoPath_V)),
-            namedValue(runNoRule_C,integer(runNoRule_V))
+            namedValue(runNoPath_C,integer(runNoPath_V))
             ],TaskQueueObj),
         wSBE_Options():updateOptionsNotifyFE(TaskQueueObj).
     updateNodeContent(_NodePath,_TaskQueueObj).
@@ -539,7 +565,6 @@ clauses
                 foreach
                     SourceObj = wsBE_XmlDocument():getNode_nd([current(TreeNodeObj), descendant("*", { (O1) :- toString(O1) = NodeID })]),
                     FileName = SourceObj:tryGetAttribute(fileName_C)
-%                    doneStatus_C = SourceObj:tryGetAttribute(status_C)
                 do
                     wsBE_Performer():execSource(SourceObj, FileName,TaskQueueObj)
                 end foreach
@@ -548,23 +573,39 @@ clauses
     execute(_SourceIDList, _SourceNodePath,_TaskQueueObj).
 
 clauses
-    perform(SourceIDList, SourceNodePath,TaskQueueObj) :-
+    checkFile(SourceNodePath, TaskQueueObj):-
+        foreach
+            SourceNodePath = [_Parent | TargetPath],
+            SourcePath = getSourcePath(TargetPath),
+            TreePath = [root(), self({ (_) }) | SourcePath],
+            TreeNodeObj = wsBE_XmlDocument():getNode_nd(TreePath),
+            !,
+            SourceObj = wsBE_XmlDocument():getNode_nd([current(TreeNodeObj), descendant("*", { (O) :- O:name_P = source_C })]) and
+            FileName = SourceObj:tryGetAttribute(fileName_C)
+        do
+            wsBE_Performer():checkFile(SourceObj, FileName, TaskQueueObj)
+        end foreach.
+
+clauses
+    perform(SourceIDList, SourceNodePath, IsContinue, TaskQueueObj) :-
         SourceNodePath = [_Parent | TargetPath],
         SourcePath = getSourcePath(TargetPath),
         TreePath = [root(), self({ (_) }) | SourcePath],
         TreeNodeObj = wsBE_XmlDocument():getNode_nd(TreePath),
         !,
-        wsBE_Performer():runDone_V := 0,
-        wsBE_Performer():runFailed_V := 0,
-        wsBE_Performer():runNoPath_V := 0,
-        wsBE_Performer():runNoRule_V := 0,
-        wsBE_Performer():runTotalCount_V := list::length(SourceIDList),
+        if false = IsContinue then
+            wsBE_Performer():runDone_V := 0,
+            wsBE_Performer():runFailed_V := 0,
+            wsBE_Performer():runNoPath_V := 0,
+            wsBE_Performer():runNoRule_V := 0,
+            wsBE_Performer():runTotalCount_V := list::length(SourceIDList)
+        end if,
         wsBE_Performer():stopRunFlag_P := false,
         performSourceIDList_F := SourceIDList,
         treeNodeObj_F := TreeNodeObj,
         sourceNodePath_F := SourceNodePath,
         doRunSource(TaskQueueObj).
-    perform(_SourceIDList, _TargetPath,_TaskQueueObj) :-
+    perform(_SourceIDList, _TargetPath,_IsContinue,_TaskQueueObj) :-
         exception::raise_User("Unexpected Alternative").
 
 facts
@@ -591,6 +632,7 @@ clauses
 
 clauses
     stopRun(TaskQueueObj) :-
+        performSourceIDList_F := [],
         wsBE_Performer():stopRun(TaskQueueObj).
 
 clauses
@@ -659,7 +701,8 @@ clauses
                     Source1:removeAttribute(datetime_C)
                 end if
             end foreach
-        end if.
+        end if,
+        saveWorkSpace().
 
 predicates
     clearIfExistNoDoneStatus : (xmlElement* SourceList) determ.
@@ -685,12 +728,7 @@ clauses
         resetState_V = false.
 
 clauses
-    setupVirtualDirList(TaskQueueObj) :-
-        VirtualDirList = [ namedValue(Name, string(toString(tuple(VirtualDir, IsVip)))) || wSBE_Options():getVirtualDir_nd(Name, VirtualDir, IsVip) ],
-        notify(wsBE_SetupVirtualDir_C, VirtualDirList,TaskQueueObj).
-
-clauses
-    getShortFileName(FullFileName,TaskQueueObj):-
+    getShortFileName(FullFileName, TaskQueueObj):-
         notify(wsBE_SetShortName_C, [namedValue(FullFileName, string(wSBE_Options():getShortFileName(FullFileName)))],TaskQueueObj).
 
 clauses
@@ -722,11 +760,23 @@ clauses
         VirtualDirList = [ namedValue(Name, string(toString(tuple(VirtualDir, IsVip)))) || wSBE_Options():getVirtualDir_nd(Name, VirtualDir, IsVip) ],
         SourceColorsList = [namedValue(ColorName, string(toString(tuple(FGColor, BGColor)))) || wSBE_Options():getSourceColor_nd(ColorName, FGColor, BGColor)],
         SelectSourceType = wSBE_Options():getSelectSourceType(),
+        PerformGroupList = [namedValue(Synname, string(CompName)) || wSBE_Options():getCompRun_nd(CompName, Synname)],
         LanguageList = ws_Events():getLanguageList(),
         SettingsList = list::append([namedValue("lang",string(toString(LanguageList)))],
-                                                [namedValue("count", string(toString(tuple(list::length(ExtOptionsList),list::length(VirtualDirList),SelectSourceType))))],
+                                                [namedValue("count", string(toString(tuple(list::length(ExtOptionsList),list::length(VirtualDirList),SelectSourceType,wSBE_Options():wsv_file))))],
                                                 ExtOptionsList, VirtualDirList, SourceColorsList),
-        notify(wsBE_Settings_C, SettingsList,TaskQueueObj).
+        SettingsList6 = list::append(SettingsList, PerformGroupList),
+        notify(wsBE_Settings_C, SettingsList6,TaskQueueObj).
+
+clauses
+    updateWSVSettings(TaskQueueObj):-
+        VirtualDirList = [ namedValue(Name, string(toString(tuple(VirtualDir, IsVip)))) || wSBE_Options():getVirtualDir_nd(Name, VirtualDir, IsVip) ],
+        notify(wsBE_UpdateWSV_C, VirtualDirList, TaskQueueObj).
+
+clauses
+    getWSVariablesForLO(TaskQueueObj):-
+        VirtualDirList = [ namedValue(Name, string(toString(tuple(VirtualDir, IsVip)))) || wSBE_Options():getVirtualDir_nd(Name, VirtualDir, IsVip) ],
+        notify(wsBE_GetWSVariablesForLO_C, VirtualDirList, TaskQueueObj).
 
 predicates
     getExtOptionsList : () -> namedValue*.
@@ -776,6 +826,24 @@ clauses
         wSBE_Options():insertVirtualDir(Name, NewDirValue),
         updateNoPathStatus().
 
+clauses
+    setVipVirtualDir(VipVirtualDir):-
+        wSBE_Options():setVipVirtualDir(VipVirtualDir).
+
+clauses
+    setWSVariableFile(NewWSVFile):-
+        wSBE_Options():setWSVariableFile(NewWSVFile),
+        wsBE_XmlDocument() = XML_Doc,
+        if file::existExactFile(NewWSVFile) then
+            if _ = XML_Doc:root_P:attribute("wsv") then
+                XML_Doc:root_P:modifyAttribute("wsv", NewWSVFile)
+            else
+                XML_Doc:root_P:addAttribute("wsv", NewWSVFile)
+            end if
+        elseif NewWSVFile = "", XML_Doc:root_P:tryRemoveAttribute("wsv")  then
+        end if,
+        saveWorkSpace().
+
 predicates
     updateNoPathStatus : ().
 clauses
@@ -785,17 +853,17 @@ clauses
             Source = wsBE_XmlDocument():getNode_nd(ActualPath),
                 NodeAttr = getNodeAttributes(Source),
                 NodeAttr = [namedValue(nodeID_C, string(source_C)), namedValue(xmlObj_C, _) | SourceParams],
-                ws_Events():getString(noPathStatus_C) = namedValue::tryGetNamed_String(SourceParams, status_C),
+                toString(noPathStatus_C) = namedValue::tryGetNamed_String(SourceParams, status_C),
                 File = namedValue::getNamed_String(SourceParams, fileName_C),
-                string::hasPrefixIgnoreCase(File, "$(", Rest),
-                string::splitStringBySeparators(Rest, ")", VirtualName, _, _),
-                wSBE_Options():existVirtualName(string::concat("$(", VirtualName, ")"))
+                Full = wsBE_Options():getFullFileName(File),
+                file::existExactFile(Full)
         do
             Source:removeAttribute(status_C)
         end foreach,
         saveWorkSpace().
 
-predicates
+class predicates
+% predicates
     getActualPath : (xmlNavigate::step_D* SourcePath) -> xmlNavigate::step_D* ActualPath.
 clauses
     getActualPath(SourcePath) =
@@ -808,7 +876,8 @@ clauses
                         })
                 ]).
 
-predicates
+class predicates
+% predicates
     getSourcePath : (namedValue* NodePath) -> xmlNavigate::step_D* SourcePath.
 clauses
     getSourcePath(NodePath) =
@@ -894,7 +963,7 @@ clauses
                 ]),
         Position_T = Target:position().
 
-class predicates
+predicates
     mapXmlObjTree2xmlTermTree : (spbTree::tree{string NodeName, xmlElement}) -> spbTree::tree{string NodeId, namedValue*}.
 clauses
     mapXmlObjTree2xmlTermTree(spbTree::tree(NodeID, XmlElement, ChildTreeList)) = spbTree::tree(NodeID, NodeAttributes, []) :-
@@ -917,7 +986,7 @@ clauses
         !,
         spbTree::tree(_NodeID, _NodeAttributes, NewRestNodeList) = mapXmlObjTree2xmlTermTree(spbTree::tree(NodeID, XmlElement, RestNodeList)).
 
-class predicates
+predicates
     getNodeAttributes : (xmlElement XmlElement) -> namedValue*.
     getNodeAttributes : (xmlElement XmlElement, string NodeId) -> namedValue*.
 
@@ -925,11 +994,16 @@ clauses
     getNodeAttributes(XmlElement) = getNodeAttributes(XmlElement, XmlElement:name_P).
 
     getNodeAttributes(XmlElement, NodeId) =
-            [namedValue(nodeID_C, string(NodeId)), namedValue(xmlObj_C, string(toString(XmlElement))) | NodeAttributes] :-
+            [namedValue(nodeID_C, string(NodeId)), namedValue(xmlObj_C, string(toString(XmlElement))) | FullNodeAttributes] :-
         NodeAttributes =
             [ NodeAttribute ||
                 tuple(_AttrPrefix, AttrName, AttrValue) = XmlElement:getAttribute_nd(),
                 NodeAttribute = namedValue(AttrName, string(AttrValue))
-            ].
+            ],
+        if FileName = XmlElement:attribute(fileName_C) then
+            FullNodeAttributes = [namedValue("fullFileName", string(wsBE_Options():getFullFileName(FileName)))| NodeAttributes]
+        else
+            FullNodeAttributes = NodeAttributes
+        end if.
 
 end implement wSBE_Tasks

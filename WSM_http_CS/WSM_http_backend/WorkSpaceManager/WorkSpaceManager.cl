@@ -6,7 +6,7 @@ class workSpaceManager : workSpaceManager
 constants
     isHttpService : boolean = true.
     isBackEnd_app : boolean = true.
-    isSolutionMng_app : boolean = false.
+    isMonoApplicaion : boolean = false.
 
 constructors
     new:().

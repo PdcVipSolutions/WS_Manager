@@ -35,7 +35,7 @@ clauses
             [ listViewControl::item(ItemID, Name, 0, [], [string::format("0x%06X", FGColor)])
             ||
                 namedValue(Name, string(ColorsStr)) in SourceColorsList,
-                tuple(FGColor, BGColor) = toTerm(tuple{integer, integer}, ColorsStr),
+                tuple(FGColor, BGColor) = toTerm(tuple{color, color}, ColorsStr),
                 ItemID = getNextId(),
                 assert(rowColor(ItemID, FGColor, BGColor))
             ],
@@ -48,7 +48,7 @@ clauses
             languageList_ctl:selectAt(Index, true)
         end if.
 
-predicates
+class predicates
     isCurrentLang : (boolean, tuple{boolean,string,string}) determ.
 clauses
     isCurrentLang(IsSelect, tuple(IsSelect,_,_)).
@@ -68,11 +68,11 @@ clauses
 
 facts
     lastId : unsignedNative := 20.
-    rowColor : (listViewControl::itemId ItemID,integer FGColor,integer BGColor).
+    rowColor : (listViewControl::itemId ItemID,color FGColor,color BGColor).
 
 clauses
     getNewSourceColors() =
-        [namedValue(listViewControl_ctl:getItemColumnText(listViewControl_ctl:tryGetItemIndex(ItemID), 0), string(toString(tuple(FGColor, BGColor)))) ||
+        [namedValue(listViewControl_ctl:getItemColumnText(listViewControl_ctl:tryGetItemIndex(ItemID), 1), string(toString(tuple(FGColor, BGColor)))) ||
             rowColor(ItemID, FGColor, BGColor)].
 
 predicates
@@ -98,8 +98,8 @@ clauses
         if
             rowColor(ItemID, FGColor, BGColor)
         then
-            memory::setInteger(memory::pointerAdd(NmLvCustomDraw, sizeOfDomain(gui_native::nmCustomDraw)), FGColor),
-            memory::setInteger(memory::pointerAdd(NmLvCustomDraw, sizeOfDomain(gui_native::nmCustomDraw)+sizeOfDomain(color)), BGColor)
+            memory::setInteger(memory::pointerAdd(NmLvCustomDraw, sizeOfDomain(gui_native::nmCustomDraw)), convert(integer, FGColor)),
+            memory::setInteger(memory::pointerAdd(NmLvCustomDraw, sizeOfDomain(gui_native::nmCustomDraw)+sizeOfDomain(color)), convert(integer, BGColor))
         end if,
         fail.
     anotherColorForFailed(_Source, _NmLvCustomDraw) = window::nativeResult(gui_native::cdrf_dodefault).
@@ -145,12 +145,8 @@ clauses
             listViewControl_ctl:select([ItemId], true)
         end if.
 
-predicates
-    onListViewControlColumnClick : listViewControl::columnClickListener.
-clauses
-    onListViewControlColumnClick(_Source, _ColumnNumber).
-
-% This code is maintained automatically, do not update it manually. 14:55:34-30.9.2017
+% This code is maintained automatically, do not update it manually.
+%  12:26:41-20.11.2018
 
 facts
     listViewControl_ctl : listviewcontrol.
@@ -169,7 +165,6 @@ clauses
         listViewControl_ctl := listviewcontrol::new(This),
         listViewControl_ctl:setPosition(4, 16),
         listViewControl_ctl:setSize(176, 84),
-        listViewControl_ctl:addColumnClickListener(onListViewControlColumnClick),
         listViewControl_ctl:addMouseClickListener(onListViewControlMouseClick),
         staticText_ctl := textControl::new(This),
         staticText_ctl:setText("Font Color of Source List:"),

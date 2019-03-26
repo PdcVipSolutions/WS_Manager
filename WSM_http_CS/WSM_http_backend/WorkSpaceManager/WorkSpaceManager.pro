@@ -12,7 +12,7 @@ clauses
         EventManager = ws_EventManager::new(),
         ws_BackEnd_V := ws_BackEnd::new(EventManager),
         setProc_name(methodNext_C, beNext),
-        setListener_name(methodRequestChain_C, beDoIt),
+        setProc_name(methodRequestChain_C, beDoIt),
         setProc_name(methodRequest_C, beRequest),
         WSBE_TasksObj=ws_BackEnd_V:entityRegistry_P:getEntityByName_nd(ws_BackEnd::wsBE_Tasks_C),
         wsBE_Tasks_V:=tryConvert(wsBE_Tasks,WSBE_TasksObj),
@@ -21,9 +21,9 @@ clauses
         exception::raise_User("Unexpected alternative").
 
 predicates
-    beDoIt : jsonListener_name.
+    beDoIt : jsonProc_name.
 clauses
-    beDoIt(_Context, ArgMap):-
+    beDoIt(_Context, ArgMap)=o(Result):-
         EventID = ArgMap:get_integer("eventID"),
         TransactionID = ArgMap:get_integer(transactionID_C),
         EventParams = toTerm(namedValue_list, ArgMap:get_string("evParams")),
@@ -34,7 +34,9 @@ clauses
                 {:-
                 ws_BackEnd_V:eventManager_P:eventTaskCall_P:notify(EventID, EventParams,TaskQueue)
                 }
-            ).
+            ),
+        Result = jsonObject::new(),
+        Result:set_String(toString(wsBE_NoData_C),toString([])).
 
 predicates
     beNext : jsonProc_name.
@@ -45,14 +47,14 @@ clauses
         Result = jsonObject::new(),
         if tuple(EventIDnext,Parameters) = TaskQueue:tryDequeue() then
             Result:set_String(toString(EventIDnext),toString(Parameters)),
-            Result:set_Integer(transactionID_C,TransactionID),
             if EventIDnext=wsBE_EndOfData_C then
                 wsBE_Tasks_V:getTaskQueues():tsRemoveKey(TransactionID)
             end if
         else
             Result:set_String(toString(wsBE_WillFollow_C),toString([])),
             Result:set_Integer(transactionID_C,TransactionID)
-        end if.
+        end if,
+        Result:set_Integer(transactionID_C,TransactionID).
 
 predicates
     beRequest : jsonProc_name.

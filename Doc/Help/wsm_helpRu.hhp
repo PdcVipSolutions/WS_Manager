@@ -1,0 +1,19 @@
+[OPTIONS]
+Compatibility=1.1 or later
+Compiled file=..\..\..\..\SpbVipTools\Bin\WSMAppData\wsm_helpRu.chm
+Contents file=wsm_toc.hhc
+Default topic=IntroductionRu.html
+Display compile progress=Yes
+Language=0x419 Русский (Россия)
+
+[FILES]
+AddAndRemoveFilesRu.html
+CreateAndEditWSM_VarsRu.html
+FileActionsRu.html
+FileTypeDefRu.html
+HelpEn.html
+HelpRu.html
+InitialActionsRu.html
+IntroductionRu.html
+WorkSpaceStructureRu.html
+

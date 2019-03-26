@@ -10,15 +10,15 @@ properties
     extOptionsList_P : namedValue*.
     newExtOptionsList : namedValue*.
 
-    openTab_P : openTab.
-    runTab_P : runTab.
-    execTab_P : execTab.
+%    openTab_P : openTab.
+%    runTab_P : runTab.
+%    execTab_P : execTab.
     extLBox_ctl : listBox.
 
     tabControl_ctl : tabcontrol.
 
 predicates
-    updateResultString : ().
+    updateResultString : (commandTab CommandTab).
 predicates
     updateAttribute : (editControl Source).
 predicates

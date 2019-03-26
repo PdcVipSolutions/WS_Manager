@@ -1,0 +1,17 @@
+[OPTIONS]
+Compatibility=1.1 or later
+Compiled file=..\..\..\..\SpbVipTools\\Bin\WSMAppData\wsm_helpEn.chm
+Contents file=wsm_tocEn.hhc
+Default topic=IntroductionEn.html
+Display compile progress=Yes
+Language=0x409 English(USA)
+
+[FILES]
+IntroductionEn.html
+InitialActionsEn.html
+FileTypeDefEn.html
+CreateAndEditWSM_VarsEn.html
+AddAndRemoveFilesEn.html
+WorkSpaceStructureEn.html
+FileActionsEn.html
+

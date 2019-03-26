@@ -1,33 +1,29 @@
 ﻿%
 implement wsBE_PerformVIPPRJ
-    open core, ws_eventManager
+    open core
 
-class facts
-    vipPath_V:string:=getVipPath().
+%class facts
+%    vipPath_V:string:=getVipPath().
 
 facts
     macroSymbols : (string MacroName, string Value).
 
-class predicates
-    getVipPath:()->string VipPath.
-clauses
-    getVipPath()=VipPath:-
-        string(VipPath)=registry::tryGetValue(registry::localMachine,@"SOFTWARE\Prolog Development Center\Visual Prolog","VipPath"),
-        !.
-    getVipPath()=_:-
-        exception::raise_User("Vip is not installed or it is installed incorreectly").
-
-constants
-    error_C : symbol = "error".
-    warning_C : symbol = "warning".
-    fatalError_C : symbol = "fatal error".
-    registerCompError_C : symbol = "RegistryError".
-    callFailed_C : symbol ="call failed".
+%class predicates
+%    getVipPath:()->string VipPath.
+%clauses
+%    getVipPath()=VipPath:-
+%        string(VipPath)=registry::tryGetValue(registry::localMachine,@"SOFTWARE\Prolog Development Center\Visual Prolog","VipPath"),
+%        !.
+%    getVipPath()=_:-
+%        exception::raise_User("Vip is not installed or it is installed incorreectly").
 
 clauses
-    tryParseError(Line)=tuple(ParseResult, ErrorNumber, FileName) :-
-        ErrorOrWarning in [error_C, fatalError_C, warning_C,registerCompError_C,callFailed_C],
-            Pos = string::search(Line, ErrorOrWarning),
+    tryParseError(Line, KeyWords) = tuple(ParseResult, ErrorNumber, FileName) :-
+        ErrorList = toTerm(namedValue::tryGetNamed_string(KeyWords, "Error")),
+        WarningList = toTerm(namedValue::tryGetNamed_string(KeyWords, "Warning")),
+        WordsList = list::append(ErrorList, WarningList),
+        ErrorOrWarning in WordsList,
+            Pos = string::search(Line, ErrorOrWarning, string::caseInsensitive),
             string::front(Line, Pos, FileName, Rest1),
             string::hasPrefix(Rest1, ErrorOrWarning, RestString),
             string::fronttoken(RestString, Token, _Message),
@@ -39,24 +35,28 @@ clauses
                     Token
                 end if,
             ErrorNumber = tryToTerm(Token2),
-            if ErrorOrWarning=warning_C then ParseResult=wSBE_Perform::performWarning_C
+            if ErrorOrWarning in WarningList then ParseResult=wSBE_Perform::performWarning_C
             else ParseResult=wSBE_Perform::performError_C end if,
         !.
-    tryParseError(StringInLowerCase)=tuple(wsBE_Perform::performError_C,ErrorNumber,""):-
+    tryParseError(StringInLowerCase, _KeyWords) = tuple(wsBE_Perform::performError_C,ErrorNumber,""):-
         string::hasPrefix(StringInLowerCase, "error ", RestString),
         string::fronttoken(RestString, Token, _),
         string::hasDecimalDigits(Token),
         ErrorNumber = tryToTerm(Token),
         !.
-    tryParseError(StringInLowerCase)=tuple(wsBE_Perform::performError_C, 1,"") :-
-            _Pos = string::search(StringInLowerCase, callFailed_C).
+    tryParseError(StringInLowerCase, KeyWords) = tuple(wsBE_Perform::performError_C, 1, "") :-
+        LinkErrorList = toTerm(namedValue::tryGetNamed_string(KeyWords, "LinkError")),
+        ErrorOrWarning in LinkErrorList,
+        _Pos = string::search(StringInLowerCase, ErrorOrWarning, string::caseInsensitive),
+        !.
 
 clauses
-    getExecuteCommandLine(Parent, SourceFile, CommandLine, ArgumentStr) = tuple(string::concat(FullCommandLine, " ", ArgumentStr), FullExeDir) :-
+    getExecuteCommandLine(Parent, SourceFile, ApplicationFile, CommandLine, ArgumentStr) = tuple(string::concat(FullCommandLine, " ", ArgumentStr), FullApplicationFile, FullExeDir) :-
         assert(macroSymbols("$(SourceFile)", SourceFile)),
         assert(macroSymbols("$(SourceName)", filename::getNameWithExtension(SourceFile))),
         assert(macroSymbols("$(ExeName)", fileName::setExtension(filename::getName(SourceFile),"exe"))),
         FullCommandLine = parseCommandLine(Parent:wsBE_Options_P, CommandLine),
+        FullApplicationFile = parseCommandLine(Parent:wsBE_Options_P, ApplicationFile),
         if macroSymbols("$(SourceExeDir)", FullExeDir) then
         else
             FullExeDir = ""

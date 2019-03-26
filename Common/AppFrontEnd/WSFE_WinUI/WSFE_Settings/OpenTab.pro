@@ -25,7 +25,7 @@ clauses
     gbResultStr_P() = gbResultStr_ctl.
     cbFEMode_P() = cbFEMode_ctl.
 
-% This code is maintained automatically, do not update it manually. 13:45:37-14.9.2016
+% This code is maintained automatically, do not update it manually. 14:21:11-3.10.2017
 
 facts
     txtFormatCommand_ctl : textControl.
@@ -43,7 +43,7 @@ predicates
 clauses
     generatedInitialize() :-
         setText("Open"),
-        This:setSize(252, 111),
+        This:setSize(252, 180),
         txtFormatCommand_ctl := textControl::new(This),
         txtFormatCommand_ctl:setText("Format Command: [Editor File] [Arguments] \"$(SourceFile)\""),
         txtFormatCommand_ctl:setPosition(8, 6),

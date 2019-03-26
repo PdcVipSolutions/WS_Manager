@@ -5,8 +5,8 @@ class workSpaceManager : workSpaceManager
 
 constants
     isBackEnd_app : boolean = true.
-    isSolutionMng_app : boolean = true.
-    isHttpService : boolean = false.
-    isHttpClient :boolean = false.
+    isMonoApplicaion : boolean = true.
+    isHttpService : boolean = false [compileTimeSetting].
+    isHttpClient :boolean = false [compileTimeSetting].
 
 end class workSpaceManager

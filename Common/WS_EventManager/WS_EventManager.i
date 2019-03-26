@@ -7,7 +7,7 @@ properties
     eventTaskCall_P:event3{integer EventID,namedValue* EventParameters,object TaskQueueObj}.
     eventMsg_P:event2{integer EventID,namedValue* EventParameters}.
     appEvent_P:event1{integer MessageID}.
-    currentLng : string.
+    currentLng_P : varM{string}.
 
 predicates
     setCurrentLng : (string Lng).

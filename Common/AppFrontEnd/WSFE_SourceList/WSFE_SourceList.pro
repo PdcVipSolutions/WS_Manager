@@ -9,31 +9,12 @@ facts
     sourceItemGroup : (itemId, tuple{string, string, string}).
     localItemStatus : (itemId, string).
 
-    vip_P : integer:=erroneous.
-    vip_bw_P : integer:=erroneous.
-    txt_P : integer:=erroneous.
-    txt_light_P : integer:=erroneous.
-    pzl_bk_P : integer:=erroneous.
-    pzl_wt_P : integer:=erroneous.
-
     slDropSite : dropsite.
     trDropSite : dropsite.
     dragMoveItems : tuple{itemId, itemId} := erroneous.
     dragMoveToTree : tuple{any, treeNode_std} := erroneous.
 
     rowColor : (string SourceType,integer FGColor,integer BGColor).
-
-constants
-    vip_C:binary=#bininclude(@"WS_manager\Common\AppFrontEnd\PNGwrk\VISUAL.png").
-    vip_bw_C:binary=#bininclude(@"WS_manager\Common\AppFrontEnd\PNGwrk\VISUAL-light.png").
-    txt_C:binary=#bininclude(@"WS_manager\Common\AppFrontEnd\PNGwrk\doc-text-inv-16-000000.png").
-    txt_light_C:binary=#bininclude(@"WS_manager\Common\AppFrontEnd\PNGwrk\doc-text-16-000000.png").
-    pzl_bk_C:binary=#bininclude(@"WS_manager\Common\AppFrontEnd\PNGwrk\icon_puzzle-16-000000.png").
-    pzl_wt_C:binary=#bininclude(@"WS_manager\Common\AppFrontEnd\PNGwrk\icon_puzzle_alt-16-000000.png").
-
-constants
-    imageWidth_C=16.
-    imageHeight_C=16.
 
 clauses
     setSourceItemGroup(ItemId, Value):-
@@ -83,15 +64,7 @@ clauses
             slDropSite:tipText := tryGetSelectSourceFileName(),
             listViewControl::item(SourceID, _FileName, ImageId, _, [_Path, _OldStatus, _OldErrWarn, _OldDateTime]) = sourceList_P:getItem(SourceID)
         then
-            if ImageId =  vip_P then DragBitmap = bitmap::createFromBinary(vip_C)
-            elseif ImageId =  vip_bw_P then DragBitmap = bitmap::createFromBinary(vip_bw_C)
-            elseif ImageId =  txt_P then DragBitmap = bitmap::createFromBinary(txt_C)
-            elseif ImageId =  txt_light_P then DragBitmap = bitmap::createFromBinary(txt_light_C)
-            elseif ImageId =  pzl_bk_P then DragBitmap = bitmap::createFromBinary(pzl_bk_C)
-            elseif ImageId =  pzl_wt_P then DragBitmap = bitmap::createFromBinary(pzl_wt_C)
-            else
-                DragBitmap = bitmap::createFromBinary(#bininclude(@"pfc\gui\controls\ribbonControl\ribbonDesignerDlg\Icons\Section.png"))
-            end if,
+            DragBitmap = wsFE_Images():createBitmap(ImageId),
             DragItemList = [toAny(dragItem(SourceId))],
             dragNdrop::beginDrag(Source:getParent(), DragItemList,
                 dragNdrop::dragShape(DragBitmap, tuple(dragNdrop::relative(1 / 8), dragNdrop::relative(7 / 8))))
@@ -128,7 +101,12 @@ clauses
             end if
         then
             dragMoveItems := tuple(SourceItemId, TargetItemId),
-            showPopup(pnt(X,Y), dragNdropOperation_V)
+            DragNDropOperation =
+                [
+                txt(menu_put_above, ws_Events():getString(pmnSrcMoveAbove), noAccelerator, b_true, mis_none, []),
+                txt(menu_put_below, ws_Events():getString(pmnSrcMoveBelow), noAccelerator, b_true, mis_none, [])
+                ],
+            showPopup(pnt(X,Y), DragNDropOperation)
         end if.
 
 predicates
@@ -208,7 +186,12 @@ clauses
             TNode = wsFE_SourceTree():treeControl_P:tryGetNodeAtPosition(pnt(X, Y))
         then
             dragMoveToTree := tuple(AnyItem, TNode),
-            showPopupTree(pnt(X,Y), dragNdropTreeOperation_V)
+            DragNDropTreeOperation =
+                [
+                txt(menu_put_top, ws_Events():getString(pmnSrcMoveTop), noAccelerator, b_true, mis_none, []),
+                txt(menu_put_end, ws_Events():getString(pmnSrcMoveLast), noAccelerator, b_true, mis_none, [])
+                ],
+            showPopupTree(pnt(X,Y), DragNDropTreeOperation)
         end if.
 
 clauses
@@ -217,7 +200,6 @@ clauses
         sourceList_P:=ListControl,
         sourceList_P:dockStyle := control::dockfill,
         sourceList_P:addMouseDblClickListener(onListViewControlMouseDblClick),
-        sourceList_P:addSelectEndListener(onSelectEnd),
         sourceList_P:dragBeginResponder := dragBeginSourceList,
 
         slDropSite := dropsite::createDropsite(sourceList_P),
@@ -236,14 +218,7 @@ clauses
         sourceList_P:addKeyDownListener(onKeyDown),
         addMenuHandlers(),
 
-        ImageList = imageList::new(imageWidth_C, imageHeight_C),
-        sourceList_P:imageList := ImageList,
-        vip_P:=ImageList:addGDIplusBitmap(bitmap::createFromBinary(vip_C)),
-        vip_bw_P:=ImageList:addGDIplusBitmap(bitmap::createFromBinary(vip_bw_C)),
-        txt_P:=ImageList:addGDIplusBitmap(bitmap::createFromBinary(txt_C)),
-        txt_light_P:=ImageList:addGDIplusBitmap(bitmap::createFromBinary(txt_light_C)),
-        pzl_bk_P:=ImageList:addGDIplusBitmap(bitmap::createFromBinary(pzl_bk_C)),
-        pzl_wt_P:=ImageList:addGDIplusBitmap(bitmap::createFromBinary(pzl_wt_C)),
+        sourceList_P:imageList := wsFE_Images(),
         ColumnList = [
              column(ws_Events():getString(colSourceFile), 200, alignleft),
              column(ws_Events():getString(colPath), 300, alignleft),
@@ -254,16 +229,18 @@ clauses
         sourceList_P:insertColumnList(1, ColumnList),
         ws_Events():changeLanguageEvent:addListener(
             {:-
-             column(_, W1, A1) = sourceList_P:getColumn(1),
-             sourceList_P:setColumn(1, column(ws_Events():getString(colSourceFile), W1, A1)),
-             column(_, W2, A2) = sourceList_P:getColumn(2),
-             sourceList_P:setColumn(2, column(ws_Events():getString(colPath), W2, A2)),
-             column(_, W3, A3) = sourceList_P:getColumn(3),
-             sourceList_P:setColumn(3, column(ws_Events():getString(colStatus), W3, A3)),
-             column(_, W4, A4) = sourceList_P:getColumn(4),
-             sourceList_P:setColumn(4, column(ws_Events():getString(colErrors), W4, A4)),
-             column(_, W5, A5) = sourceList_P:getColumn(5),
-             sourceList_P:setColumn(5, column(ws_Events():getString(colDateTime), W5, A5))
+             if sourceList_P:isShown then
+                column(_, W1, A1) = sourceList_P:getColumn(1),
+                sourceList_P:setColumn(1, column(ws_Events():getString(colSourceFile), W1, A1)),
+                column(_, W2, A2) = sourceList_P:getColumn(2),
+                sourceList_P:setColumn(2, column(ws_Events():getString(colPath), W2, A2)),
+                column(_, W3, A3) = sourceList_P:getColumn(3),
+                sourceList_P:setColumn(3, column(ws_Events():getString(colStatus), W3, A3)),
+                column(_, W4, A4) = sourceList_P:getColumn(4),
+                sourceList_P:setColumn(4, column(ws_Events():getString(colErrors), W4, A4)),
+                column(_, W5, A5) = sourceList_P:getColumn(5),
+                sourceList_P:setColumn(5, column(ws_Events():getString(colDateTime), W5, A5))
+            end if
             }),
         sourceList_P:setLVType(listViewControl::lvs_report),
         sourceList_P:setStyle([
@@ -284,30 +261,10 @@ constants
     menu_RestoreItem : menuTag = 10506.
     menu_LocalOptions : menuTag = 10507.
 
-facts
-    sourceListOperation_V:menuItem* := [].
-    dragNdropOperation_V:menuItem* := [].
-    dragNdropTreeOperation_V:menuItem* := [].
-
 predicates
     addMenuHandlers : ().
 clauses
     addMenuHandlers():-
-        sourceListOperation_V :=
-                [
-                txt(menu_ShowInTree, ws_Events():getString(pmnShowInTree), noAccelerator, b_true, mis_none, []),
-                txt(menu_Explore, ws_Events():getString(pmnExplore), noAccelerator, b_true, mis_none, [])
-                ],
-        dragNdropOperation_V :=
-                [
-                txt(menu_put_above, ws_Events():getString(pmnSrcMoveAbove), noAccelerator, b_true, mis_none, []),
-                txt(menu_put_below, ws_Events():getString(pmnSrcMoveBelow), noAccelerator, b_true, mis_none, [])
-                ],
-        dragNdropTreeOperation_V :=
-                [
-                txt(menu_put_top, ws_Events():getString(pmnSrcMoveTop), noAccelerator, b_true, mis_none, []),
-                txt(menu_put_end, ws_Events():getString(pmnSrcMoveLast), noAccelerator, b_true, mis_none, [])
-                ],
         sourceList_P:addMenuItemListener(menu_ShowInTree, onMenuShowInTree),
         sourceList_P:addMenuItemListener(menu_Explore, onMenuExplore),
         sourceList_P:addMenuItemListener(menu_RestoreItem, onMenuRestoreItem),
@@ -345,9 +302,20 @@ clauses
                 listViewControl::item(_, _, _, _, [_File, ItemStatus, _OldErrWarn, _DateTime]) = sourceList_P:getItem(ItemId),
                 ItemStatus = ws_Events():getString(excludedStatus_C)
             then
-                MenuItemList = [txt(menu_RestoreItem, ws_Events():getString(pmnSrcRestore), noAccelerator, b_true, mis_none, []) | sourceListOperation_V]
+                MenuItemList =
+                    [
+                    txt(menu_RestoreItem, ws_Events():getString(pmnSrcRestore), noAccelerator, b_true, mis_none, []),
+                    txt(menu_ShowInTree, ws_Events():getString(pmnShowInTree), noAccelerator, b_true, mis_none, []),
+                    txt(menu_LocalOptions, ws_Events():getString(cmdLocalOptions_C), noAccelerator, b_true, mis_none, []),
+                    txt(menu_Explore, ws_Events():getString(pmnExplore), noAccelerator, b_true, mis_none, [])
+                    ]
             else
-                MenuItemList = sourceListOperation_V
+                MenuItemList =
+                    [
+                    txt(menu_ShowInTree, ws_Events():getString(pmnShowInTree), noAccelerator, b_true, mis_none, []),
+                    txt(menu_LocalOptions, ws_Events():getString(cmdLocalOptions_C), noAccelerator, b_true, mis_none, []),
+                    txt(menu_Explore, ws_Events():getString(pmnExplore), noAccelerator, b_true, mis_none, [])
+                    ]
             end if,
             showPopup(Pnt, MenuItemList)
         catch _TraceId do
@@ -361,9 +329,20 @@ clauses
             listViewControl::item(_, _, _, _, [_File, ItemStatus, _OldErrWarn, _DateTime]) = sourceList_P:getItem(ItemIDSelected),
             ItemStatus = ws_Events():getString(excludedStatus_C)
         then
-            MenuItemList = [txt(menu_RestoreItem, ws_Events():getString(pmnSrcRestore), noAccelerator, b_true, mis_none, []) | sourceListOperation_V]
+            MenuItemList =
+                [
+                txt(menu_RestoreItem, ws_Events():getString(pmnSrcRestore), noAccelerator, b_true, mis_none, []),
+                txt(menu_ShowInTree, ws_Events():getString(pmnShowInTree), noAccelerator, b_true, mis_none, []),
+                txt(menu_LocalOptions, ws_Events():getString(cmdLocalOptions_C), noAccelerator, b_true, mis_none, []),
+                txt(menu_Explore, ws_Events():getString(pmnExplore), noAccelerator, b_true, mis_none, [])
+                ]
         else
-            MenuItemList = sourceListOperation_V
+            MenuItemList =
+                [
+                txt(menu_ShowInTree, ws_Events():getString(pmnShowInTree), noAccelerator, b_true, mis_none, []),
+                txt(menu_LocalOptions, ws_Events():getString(cmdLocalOptions_C), noAccelerator, b_true, mis_none, []),
+                txt(menu_Explore, ws_Events():getString(pmnExplore), noAccelerator, b_true, mis_none, [])
+                ]
         end if,
         showPopup(pnt(X+10,Y+10), MenuItemList).
     onContextMenu(_, _) = defaultContextMenuHandling.
@@ -396,7 +375,7 @@ predicates
     onMenuLocalOptions : menuItemListener.
 clauses
     onMenuLocalOptions(_, _):-
-        wsFE_Form():showLocalOptionsPanel().
+        wsFE_Form():showLocalOptionsDialog().
 
 predicates
     onMenuMoveAbove : menuItemListener.
@@ -405,8 +384,6 @@ clauses
         tuple(ItemIDSelected, ItemIDBelow) = dragMoveItems,
         wsFE_Tasks():moveSourceUp(toString(ItemIDSelected),toString(ItemIDBelow)),
         predicateDelayedQueue_P:enqueue(tuple(setSelection,uncheckedConvert(unsigned,ItemIDSelected))),
-%        sourceList_P:select([ItemIDSelected],true),
-%        sourceList_P:ensureVisible(ItemIDSelected),
         dragMoveItems := erroneous.
 
 predicates
@@ -416,8 +393,6 @@ clauses
         tuple(ItemIDSelected, ItemIDBelow) = dragMoveItems,
         wsFE_Tasks():moveSourceDown(toString(ItemIDSelected),toString(ItemIDBelow)),
         predicateDelayedQueue_P:enqueue(tuple(setSelection,uncheckedConvert(unsigned,ItemIDSelected))),
-%        sourceList_P:select([ItemIDSelected],true),
-%        sourceList_P:ensureVisible(ItemIDSelected),
         dragMoveItems := erroneous.
 
 predicates
@@ -438,8 +413,6 @@ clauses
             do
                 if NodeType <> folder_C then
                     wsFE_Tasks():moveSourceToTree(true, toString(ItemID), NodePath)
-%                else
-%                    wsFE_Tasks():cloneSourceToTree(true, toString(ItemID), NodePath)
                 end if
             end foreach
         end if,
@@ -463,8 +436,6 @@ clauses
             do
                 if NodeType <> folder_C then
                     wsFE_Tasks():moveSourceToTree(false, toString(ItemID), NodePath)
-%                else
-%                    wsFE_Tasks():cloneSourceToTree(false, toString(ItemID), NodePath)
                 end if
             end foreach
         end if,
@@ -502,8 +473,8 @@ clauses
         !.
     anotherColorForFailed(ListViewControl, NmLvCustomDraw) = window::nativeResult(gui_native::cdrf_dodefault) :-
         try
-            listViewControl::nmLvCustomDraw(gui_native::nmCustomDraw(_, gui_native::cdds_itemprepaint+gui_native::cdds_subitem, _, _, ItemSpec, _, ItemID_lpar), _TextForeground, _TextBackground, IndexCol, ItemType, _, _, _, _, _, _, _) = NmLvCustomDraw,
-            if ItemType=0, Item_ID=convert(itemID,ItemID_lpar),not(Item_ID=uncheckedConvert(handle,0)) then
+            listViewControl::nmLvCustomDraw(gui_native::nmCustomDraw(_, gui_native::cdds_itemprepaint+gui_native::cdds_subitem, _, _, ItemSpec, _, ItemID_lpar), _TextForeground, _TextBackground, IndexCol, _ItemType, _, _, _, _, _, _, _) = NmLvCustomDraw,
+            if /*ItemType=0,*/ Item_ID=convert(itemID,ItemID_lpar),not(Item_ID=uncheckedConvert(handle,0)) then
                 ItemId = ListViewControl:getItemId(convert(unsigned, uncheckedConvert(unsignedNative, ItemSpec))),
                 listViewControl::item(_, _, _, _, [_File, StatusText, _OldErrWarn, _DateTime]) = sourceList_P:getItem(ItemId),
                 if IndexCol = 3 and ws_Events():getString(failedStatus_C) = StatusText then
@@ -554,10 +525,7 @@ clauses
         then
             wsFE_Tasks():moveSourceUp(toString(ItemIDSelected),toString(ItemIDAbove)),
             predicateDelayedQueue_P:enqueue(tuple(setSelection,uncheckedConvert(unsigned,ItemIDSelected)))
-%            sourceList_P:select([ItemIDSelected],true),
-%            sourceList_P:ensureVisible(ItemIDSelected)
         end if.
-%    sourceUp().
 
 predicates
     setSelection:(unsigned ItemID).
@@ -615,7 +583,7 @@ clauses
         end if.
 
 clauses
-    setAllInQueue(NodeIdList) = QueueNodeIdList :-
+    setAllInQueue(NodeIdList, Index, TrueIsAll) = QueueNodeIdList :-
         InQueue = ws_Events():getString(inQueueStatus_C),
         Done = ws_Events():getString(doneStatus_C),
         Excluded = ws_Events():getString(excludedStatus_C),
@@ -623,8 +591,14 @@ clauses
         QueueNodeIdList=[NodeIdStr||
             NodeIdStr in NodeIdList,
             SourceIDuns=toTerm(NodeIdStr),
-            listViewControl::item(SourceIDuns, _, _, _, [_File, OldStatus, _OldErrWarn, _DateTime]) = sourceList_P:getItem(SourceIDuns),
-            not(OldStatus in [Done,Excluded]),
+            listViewControl::item(SourceIDuns, File, _, _, [_File, OldStatus, _OldErrWarn, _DateTime]) = sourceList_P:getItem(SourceIDuns),
+            CheckStatus = wsFE_Form():tryGetStatusCheck(Index, File, AllPossible),
+            if TrueIsAll = true then
+                AllPossible = true
+            end if,
+            if CheckStatus = true and list::length(NodeIdList) > 1 then
+                not(OldStatus in [Done,Excluded])
+            end if,
             showPerformStatus(NodeIdStr,InQueue,"0","0",""),
             assertz(localItemStatus(SourceIDuns, InQueue))
             ].
@@ -669,19 +643,12 @@ clauses
             end if,
             sourceList_P:updateItem(listViewControl::item(SourceIDuns, Name, IconID, Flags, [Path, Status, ErrWarn, DateTime]))
         end if.
-%    showPerformStatus(_SourceID,_Status,_Errors,_Warnings,_DateTime):-
-%        exception::raise_User("Unexpected Alternative").
 
 predicates
     onListViewControlMouseDblClick : listViewControl::mouseDblClickListener.
 clauses
     onListViewControlMouseDblClick(_Source, _Point):-
         wsFE_Tasks():openSource().
-
-predicates
-    onSelectEnd : listViewControl::selectEndListener.
-clauses
-    onSelectEnd(_Source, _ItemId, _Select).
 
 predicates
     onKeyDown : keyDownListener.

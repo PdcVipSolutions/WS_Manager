@@ -2,7 +2,7 @@
 
 implement moveRemoveCommand
     inherits wsFE_Connector
-    open core, stdio, vpiDomains, treeControl{treeNode_std}, ribbonControl, ws_eventManager,wSFE_Command
+    open core, treeControl{treeNode_std}, ribbonControl, ws_eventManager,wSFE_Command
 
 facts - command_FB
     moveEntityUpCmd : command:=erroneous.
@@ -18,12 +18,6 @@ clauses
         wsFE_SourceList():sourceList_P:addGetFocusListener(onSourceListIsActive),
         wsFE_SourceList():sourceList_P:addSelectEndListener(onListRowSelected).
 
-%clauses
-%    addChangeListener():-
-%        ws_Events():changeLanguageEvent:addListener(
-%            {:-
-%            }).
-
 clauses
     initMoveRemoveNode_Menu(Win)=MoveNodeMenu:-
         _NewGroupBlock=initCommandBlock("moveNodeUp",Win,dummyRun),
@@ -35,11 +29,9 @@ clauses
     initCommandBlock("deleteEntity",Win,Predicate)=block([  [cmd(deleteEntityCmd:id, imageAndText(vertical))]  ]):-
         !,
         deleteEntityCmd := command::new(Win,"DeleteEntity"),
-
         deleteEntityCmd:menuLabel:="Delete Source",
         deleteEntityCmd:ribbonLabel:="Delete Source",
         deleteEntityCmd:tipTitle:=toolTip::tip(""),
-
         deleteEntityCmd:icon:=some(icon::createFromImages([bitmap::createFromBinary(removeIcon16_C),bitmap::createFromBinary(removeIcon32_C)])),
         deleteEntityCmd:run := Predicate,
         deleteEntityCmd:enabled := false.
@@ -47,13 +39,9 @@ clauses
     initCommandBlock("moveNodeUp",Win,Predicate)=block([  [cmd(moveEntityUpCmd:id, imageAndText(vertical))]  ]):-
         !,
         moveEntityUpCmd := command::new(Win,@"MoveNodeUp"),
-
         moveEntityUpCmd:menuLabel:="Move Entity Up",
         moveEntityUpCmd:ribbonLabel:="Move Entity Up",
         moveEntityUpCmd:tipTitle:=toolTip::tip(""),
-
- %       moveEntityUpCmd:acceleratorKey := key(k_up, c_Alt),
-
         moveEntityUpCmd:icon:=some(icon::createFromImages([bitmap::createFromBinary(moveUpIcon16_C),bitmap::createFromBinary(moveUpIcon32_C)])),
         moveEntityUpCmd:run := Predicate,
         moveEntityUpCmd:enabled := false.
@@ -81,11 +69,10 @@ clauses
     initCommandBlock(_Any,_Win,_Predicate)=_:-
         exception::raise_User("Non planned Alternative").
 
-predicates
+class predicates
     dummyRun : (command).
 clauses
     dummyRun(_).
-
 
 predicates
     onSourceTreeIsActive:window::getFocusListener.
@@ -105,7 +92,10 @@ clauses
 
         deleteEntityCmd:menuLabel := ws_Events():getString(cmdDeleteNode_C),
         moveEntityUpCmd:menuLabel:=ws_Events():getString(cmdMoveNodeUp_C),
-        moveEntityDownCmd:menuLabel:=ws_Events():getString(cmdMoveNodeDown_C).
+        moveEntityDownCmd:menuLabel:=ws_Events():getString(cmdMoveNodeDown_C),
+
+        Node = wsFE_SourceTree():treeControl_P:getSelectNode(),
+        onTreeNodeSelected(wsFE_SourceTree():treeControl_P, Node, Node).
 
 predicates
     onTreeNodeSelected:selectEndListener.
@@ -148,34 +138,15 @@ predicates
     onListRowSelected: listViewControl::selectEndListener.
 clauses
     onListRowSelected(_Source, _ItemId, _Select) :-
-        if NodeSelected = wSFE_SourceTree():treeControl_P:tryGetSelected()
-        then
-%            if NodeSelected:tryGetValue(nodeID_C)=string(folder_C)
-%            then
-%                IsFolder=true
-%            else
-%               IsFolder=false
-%            end if,
-            if _Child=NodeSelected:getChild_nd(),!
-            then
-                NoChild=false
-            else
-               NoChild=true
-            end if
+        ListSelected = toBoolean( [_] = wSFE_SourceList():sourceList_P:getSel() ),
+        if wsFE_Tasks():sourceIsRunning_P = true then
+            moveEntityUpCmd:enabled := false,
+            moveEntityDownCmd:enabled := false,
+            deleteEntityCmd:enabled := false
         else
-%            IsFolder=true,
-            NoChild=true
-        end if,
-%        NotIsFolder=boolean::logicalNot(IsFolder),
-        ListSelected = toBoolean( [] <> wSFE_SourceList():sourceList_P:getSel() ),
-        if wsFE_Tasks():sourceIsRunning_P=true, ListSelected=true then
-                moveEntityUpCmd:enabled := false,
-                moveEntityDownCmd:enabled := false,
-                deleteEntityCmd:enabled := false
-        elseif wsFE_Tasks():sourceIsRunning_P=false then
-                deleteEntityCmd:enabled := ListSelected,
-                moveEntityUpCmd:enabled := boolean::logicalAnd(ListSelected,NoChild),
-                moveEntityDownCmd:enabled := boolean::logicalAnd(ListSelected,NoChild)
+            deleteEntityCmd:enabled := toBoolean( [] <> wSFE_SourceList():sourceList_P:getSel() ),
+            moveEntityUpCmd:enabled := ListSelected,
+            moveEntityDownCmd:enabled := ListSelected
         end if.
 
 predicates

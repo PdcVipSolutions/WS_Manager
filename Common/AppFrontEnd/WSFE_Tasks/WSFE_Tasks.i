@@ -18,6 +18,7 @@ predicates
 predicates
     newWorkSpace : ().
     on_WScreated:(string  NewWsTree).
+    loadVipVirtualDir : ().
 
 predicates
     loadWorkSpace : (). % task to FrontEnd
@@ -55,6 +56,12 @@ predicates
 
 predicates
     tryAddSource:(namedValue* Parameters,boolean SetSelect) determ.
+
+predicates
+    invoke : (integer Index, boolean TrueIfAll,string* NodeIDList).
+
+predicates
+    checkFiles : ().
 
 predicates
     run : (boolean TrueIfReRun,string* NodeIDList).
@@ -120,9 +127,6 @@ predicates
     showRunStatus:(namedValue* PerformParams).
 
 predicates
-    showVirtualDir:(namedValue* PerformResultParams).
-
-predicates
     getShortFileName : (string FileName,predicate{string}).
     setShortFileName:(namedValue* PerformResultParams).
 
@@ -137,16 +141,19 @@ predicates
     writeMessage:(namedValue* PerformParams).
 
 predicates
-%    showExtOptions:(namedValue* PerformParams).
     setExtOptions:(namedValue* PerformParams).
     setLocalExtOptions:(namedValue* PerformParams).
     saveLocalOptions:(namedValue* PerformParams).
+    showLocalOptions : ().
+    showLocalOptionsDialog : (namedValue* PerformParams).
 
 predicates
     showSettingsDialog:(namedValue* PerformParams).
+    updateWSVariables:(namedValue* PerformParams).
 
 predicates
     about:().
+    help:().
 
 predicates
     setFrontEndOptions:(namedValue* PerformParams).
@@ -169,5 +176,8 @@ predicates
     execSourceAtFrontEnd : (namedValue* PerformParams).
     runSourceAtFrontEnd : (namedValue* PerformParams).
     stopRunSourceAtFrontEnd : ().
+
+properties
+    wsvUpdateResponder_P : predicate{namedValue*}.
 
 end interface wsFE_Tasks

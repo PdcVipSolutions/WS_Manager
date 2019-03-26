@@ -5,7 +5,7 @@ class workSpaceManager : workSpaceManager
 
 constants
     isBackEnd_app : boolean = false.
-    isSolutionMng_app : boolean = false.
+    isMonoApplicaion : boolean = false.
     isHttpClient :boolean = true.
 /*
 constructors

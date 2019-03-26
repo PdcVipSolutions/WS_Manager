@@ -1,8 +1,7 @@
-﻿/*****************************************************************************
-
-                        Copyright ©
-
-******************************************************************************/
+﻿/**************************************
+Copyright © Prolog Development Center SPb
+Author: Victor Yukhtenko
+***************************************/
 class wsFE_Form : wsFE_Form [noDefaultConstructor]
 
 constructors

@@ -2,12 +2,13 @@
 
 implement sourceContentCommand
     inherits wsFE_Connector
-    open core, stdio, vpiDomains, treeControl{treeNode_std}, ws_eventManager, ribbonControl,wSFE_Command
+    open core, treeControl{treeNode_std}, ws_eventManager, ribbonControl,wSFE_Command
 
 facts
-    addSourceCmd : command:=erroneous.
-    addFromFolderCmd : command:=erroneous.
-    editSourceCmd : command:=erroneous.
+    addSourceCmd : command :=erroneous.
+    addFromFolderCmd : command :=erroneous.
+    editSourceCmd : command :=erroneous.
+    checkFileCmd : command :=erroneous.
 
 clauses
     new(FrontEnd):-
@@ -20,6 +21,7 @@ clauses
         _AddSourceBlock=initCommandBlock("addSource",WS_Form,addSource),
         _AddFolderBlock=initCommandBlock("addFromFolder",WS_Form,addFromFolder),
         _EditSourcerBlock=initCommandBlock("openSource",WS_Form,openSource),
+        _CheckFilesBlock=initCommandBlock("checkFile",WS_Form,checkFile),
         AddEntityBlockMenu=initCommandBlock("AddEntity",WS_Form,dummyRun),
         ws_Events():changeLanguageEvent:addListener(
             {:-
@@ -28,7 +30,9 @@ clauses
             addFromFolderCmd:ribbonLabel:=ws_Events():getString(cmdAddFromFolder_C),
             addFromFolderCmd:tipTitle:=toolTip::tip(ws_Events():getString(tipAddFromFolder_C)),
             editSourceCmd:ribbonLabel := ws_Events():getString(cmdOpenSrc_C),
-            editSourceCmd:tipTitle:=toolTip::tip(ws_Events():getString(tipOpenSrc_C))
+            editSourceCmd:tipTitle:=toolTip::tip(ws_Events():getString(tipOpenSrc_C)),
+            checkFileCmd:ribbonLabel := ws_Events():getString(pmnCheckFile),
+            checkFileCmd:tipTitle:=toolTip::tip(ws_Events():getString(pmnCheckFile))
             }).
 
 clauses
@@ -51,6 +55,7 @@ clauses
         addFromFolderCmd:icon:=some(icon::createFromImages([bitmap::createFromBinary(addSourcesFromFolderIcon16_C),bitmap::createFromBinary(addSourcesFromFolderIcon32_C)])),
         addFromFolderCmd:run := Predicate,
         addFromFolderCmd:enabled := false.
+
     initCommandBlock("openSource",Win,Predicate)=block([  [cmd(editSourceCmd:id, imageAndText(vertical))]  ]):-
         !,
         editSourceCmd := command::new(Win,"openSource"),
@@ -60,10 +65,21 @@ clauses
         editSourceCmd:icon := some(icon::createFromImages([bitmap::createFromBinary(editIcon16_C),bitmap::createFromBinary(editIcon32_C)])),
         editSourceCmd:run :=Predicate,
         editSourceCmd:enabled := false.
+
+    initCommandBlock("checkFile",Win, Predicate)=block([  [cmd(checkFileCmd:id, imageAndText(vertical))]  ]):-
+        !,
+        checkFileCmd := command::new(Win,"checkFile"),
+        checkFileCmd:menuLabel:=ws_Events():getString(pmnCheckFile),
+        checkFileCmd:ribbonLabel:=ws_Events():getString(pmnCheckFile),
+        checkFileCmd:tipTitle:=toolTip::tip(ws_Events():getString(pmnCheckFile)),
+        checkFileCmd:icon:=some(icon::createFromImages([bitmap::createFromBinary(checkFilesIcon_C),bitmap::createFromBinary(checkFilesIcon_C)])),
+        checkFileCmd:run := Predicate,
+        checkFileCmd:enabled := true.
+
     initCommandBlock("AddEntity",_Win,_Predicate)=block([
         [cmd(addSourceCmd:id, imageAndText(vertical))],
         [cmd(addFromFolderCmd:id, imageAndText(vertical))],
-        [cmd(editSourceCmd:id, imageAndText(vertical))]
+        [cmd(checkFileCmd:id, imageAndText(vertical))]
         ]):-
         !.
     initCommandBlock(_Any,_Win,_Predicate)=_:-
@@ -102,14 +118,16 @@ clauses
         if wsFE_Tasks():sourceIsRunning_P=true then
                 addSourceCmd:enabled := false,
                 addFromFolderCmd:enabled := false,
-                editSourceCmd:enabled := false
+                editSourceCmd:enabled := false,
+                checkFileCmd:enabled := false
         else
                 addSourceCmd:enabled := boolean::logicalAnd(boolean::logicalOr(TreeNodeSelected,ListSelected),IsGroup),
                 addFromFolderCmd:enabled := boolean::logicalAnd(boolean::logicalOr(TreeNodeSelected,ListSelected),IsGroup),
-                editSourceCmd:enabled := ListSelected
+                editSourceCmd:enabled := ListSelected,
+                checkFileCmd:enabled := true
         end if.
 
-predicates
+class predicates
     dummyRun : (command).
 clauses
     dummyRun(_).
@@ -131,5 +149,11 @@ predicates
 clauses
     openSource(_):-
         wsFE_Tasks():openSource().
+
+predicates
+    checkFile : (command).
+clauses
+    checkFile(_):-
+        wsFE_Tasks():checkFiles().
 
 end implement sourceContentCommand

@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<projectData-map debug_directory="Dbg" description="WorkSpace Manager" final_directory="$(SpbSolutions)Bin" intermediate_directory="Obj" pattern="GUI application" rules="GUI" version="6">
+<projectData-map debug_directory="Dbg" description="WorkSpace Manager" final_directory="$(SpbVipTools)Bin" intermediate_directory="Obj" pattern="GUI application" rules="GUI" version="6">
   <include_directory-list>
     <include_directory>.</include_directory>
     <include_directory>$(ProDir)</include_directory>
-    <include_directory>$(SpbSolutions)</include_directory>
+    <include_directory>$(SpbVipTools)</include_directory>
     <include_directory>$(SpbProjects)</include_directory>
   </include_directory-list>
   <item-set key="filename">
@@ -79,6 +79,8 @@
     <item-map filename="$(ProDir)pfc\gui\controls\editControl\editControl.pack" />
     <item-map filename="$(ProDir)pfc\gui\controls\groupBox\groupBox.pack" />
     <item-map filename="$(ProDir)pfc\gui\controls\iconControl\iconControl.pack" />
+    <item-map filename="$(ProDir)pfc\gui\controls\imageControl\imageControl.ctl" resource_id="imageControl" />
+    <item-map filename="$(ProDir)pfc\gui\controls\imageControl\imageControl.pack" />
     <item-map filename="$(ProDir)pfc\gui\controls\integerControl\integerControl.ctl" resource_id="integerControl" />
     <item-map filename="$(ProDir)pfc\gui\controls\integerControl\integerControl.pack" />
     <item-map filename="$(ProDir)pfc\gui\controls\listControl\listControl.pack" />
@@ -146,6 +148,7 @@
     <item-map filename="$(ProDir)pfc\memory\weakPointer\weakPointer.pack" />
     <item-map filename="$(ProDir)pfc\memory\weakReference\weakReference.pack" />
     <item-map filename="$(ProDir)pfc\multiThread\compareAndSwap\compareAndSwap.pack" />
+    <item-map filename="$(ProDir)pfc\multithread\criticalSectionSupport\criticalSectionSupport.pack" />
     <item-map filename="$(ProDir)pfc\multiThread\monitorQueue\monitorQueue.pack" />
     <item-map filename="$(ProDir)pfc\multiThread\multiThread.pack" />
     <item-map filename="$(ProDir)pfc\multiThread\threadpool\threadpool.pack" />
@@ -160,6 +163,7 @@
     <item-map filename="$(ProDir)pfc\registry\registry.pack" />
     <item-map filename="$(ProDir)pfc\std\std.pack" />
     <item-map filename="$(ProDir)pfc\stream\inputStreamSupport\inputStreamSupport.pack" />
+    <item-map filename="$(ProDir)pfc\stream\inputSupport_mode\inputSupport_mode.pack" />
     <item-map filename="$(ProDir)pfc\stream\outputStreamSupport\outputStreamSupport.pack" />
     <item-map filename="$(ProDir)pfc\stream\stream.pack" />
     <item-map filename="$(ProDir)pfc\string\string.pack" />
@@ -191,13 +195,17 @@
     <item-map filename="$(ProDir)pfc\web\xmlLite\xmlLite.pack" />
     <item-map filename="$(ProDir)pfc\web\xmlLite\xmlLiteSupport\xmlLiteSupport.pack" />
     <item-map filename="$(ProDir)pfc\web\xmlSupport\xmlSupport.pack" />
+    <item-map filename="$(ProDir)pfc\web\xmlSupport2\xmlSupport.pack" />
     <item-map filename="$(ProDir)pfc\windowsApi\authorization_api\authorization_api.pack" />
+    <item-map filename="$(ProDir)pfc\windowsApi\bCrypt_api\bCrypt_api.pack" />
+    <item-map filename="$(ProDir)pfc\windowsApi\clipboard_api\clipboard_api.pack" />
     <item-map filename="$(ProDir)pfc\windowsApi\com_api\basicInterfaces\basicInterfaces.pack" />
     <item-map filename="$(ProDir)pfc\windowsApi\com_api\com_api.pack" />
     <item-map filename="$(ProDir)pfc\windowsApi\com_api\comDomains\comDomains.pack" />
     <item-map filename="$(ProDir)pfc\windowsApi\com_api\iStream_api\iStream_api.pack" />
     <item-map filename="$(ProDir)pfc\windowsApi\com_api\safeArray_api\safeArray_api.pack" />
     <item-map filename="$(ProDir)pfc\windowsApi\com_api\standardInterfaces\IEnumXXXX\iEnumXXXX.pack" />
+    <item-map filename="$(ProDir)pfc\windowsApi\com_api\standardInterfaces\import\standardInterfaces_import.pack" />
     <item-map filename="$(ProDir)pfc\windowsApi\com_api\standardInterfaces\standardInterfaces.pack" />
     <item-map filename="$(ProDir)pfc\windowsApi\commonControls_api\commonControls_api.pack" />
     <item-map filename="$(ProDir)pfc\windowsApi\console_api\console_api.pack" />
@@ -227,6 +235,7 @@
     <item-map filename="$(ProDir)pfc\windowsApi\msXML_api\msXML_xsd_api\msxml_xsd_api.pack" />
     <item-map filename="$(ProDir)pfc\windowsApi\msXML_api\msXML_xsd_api\native\msXML_xsd_api_native.pack" />
     <item-map filename="$(ProDir)pfc\windowsApi\multiThread_api\multiThread_api.pack" />
+    <item-map filename="$(ProDir)pfc\windowsApi\ntStatus\ntStatus.pack" />
     <item-map filename="$(ProDir)pfc\windowsApi\pipe_api\pipe_api.pack" />
     <item-map filename="$(ProDir)pfc\windowsApi\registry_api\registry_api.pack" />
     <item-map filename="$(ProDir)pfc\windowsApi\runTime_api\runTime_api.pack" />
@@ -245,51 +254,52 @@
     <item-map filename="$(ProDir)pfc\windowsApi\WinErrors\winErrors.pack" />
     <item-map filename="$(ProDir)pfc\windowsApi\winSock2_api\winSock2_api.pack" />
     <item-map filename="$(ProDir)pfc\windowsApi\xmlLite_api\xmlLite_api.pack" />
-    <item-map filename="$(SpbProjects)ws_manager\Common\AppBackEnd\WS_BackEnd\WS_BackEnd.pack" />
-    <item-map filename="$(SpbProjects)ws_manager\Common\AppBackEnd\WSBE_Connector\WSBE_Connector.pack" />
-    <item-map filename="$(SpbProjects)ws_manager\Common\AppBackEnd\WSBE_Options\WSBE_Options.pack" />
-    <item-map filename="$(SpbProjects)ws_manager\Common\AppBackEnd\WSBE_PerformByExt\WSBE_PerformByExt.pack" />
-    <item-map filename="$(SpbProjects)ws_manager\Common\AppBackEnd\WSBE_PerformCMD\wsBE_PerformCMD.pack" />
-    <item-map filename="$(SpbProjects)ws_manager\Common\AppBackEnd\WSBE_Performer\WSBE_Performer.pack" />
-    <item-map filename="$(SpbProjects)ws_manager\Common\AppBackEnd\WSBE_PerformVIP\WSBE_PerformVIP.pack" />
-    <item-map filename="$(SpbProjects)ws_manager\Common\AppBackEnd\WSBE_Tasks\WSBE_Tasks.pack" />
-    <item-map filename="$(SpbProjects)ws_manager\Common\AppBackEnd\WSFE_Messages\WSFE_Messages.pack" />
-    <item-map filename="$(SpbProjects)ws_manager\Common\AppFrontEnd\WS_FrontEnd\WS_FrontEnd.pack" />
-    <item-map filename="$(SpbProjects)ws_manager\Common\AppFrontEnd\WSBE_Messages\WSBE_Messages.pack" />
-    <item-map filename="$(SpbProjects)ws_manager\Common\AppFrontEnd\WSFE_Command\WSFE_Command.pack" />
-    <item-map filename="$(SpbProjects)ws_manager\Common\AppFrontEnd\WSFE_Connector\WSFE_Connector.pack" />
-    <item-map filename="$(SpbProjects)ws_manager\Common\AppFrontEnd\WSFE_Form\WSFE_Form.frm" resource_id="WSFE_Form" />
-    <item-map filename="$(SpbProjects)ws_manager\Common\AppFrontEnd\WSFE_Form\WSFE_Form.pack" />
-    <item-map filename="$(SpbProjects)ws_manager\Common\AppFrontEnd\WSFE_SourceList\WSFE_SourceList.pack" />
-    <item-map filename="$(SpbProjects)ws_manager\Common\AppFrontEnd\WSFE_SourceTree\WSFE_SourceTree.pack" />
-    <item-map filename="$(SpbProjects)ws_manager\Common\AppFrontEnd\WSFE_Tasks\WSFE_Tasks.pack" />
-    <item-map filename="$(SpbProjects)ws_manager\Common\AppFrontEnd\WSFE_WinUI\WSFE_Settings\addNewSourceType.dlg" resource_id="addNewSourceType" />
-    <item-map filename="$(SpbProjects)ws_manager\Common\AppFrontEnd\WSFE_WinUI\WSFE_Settings\editVirtualDir.dlg" resource_id="editVirtualDir" />
-    <item-map filename="$(SpbProjects)ws_manager\Common\AppFrontEnd\WSFE_WinUI\WSFE_Settings\ExecTab.ctl" resource_id="ExecTab" />
-    <item-map filename="$(SpbProjects)ws_manager\Common\AppFrontEnd\WSFE_WinUI\WSFE_Settings\generalTab.ctl" resource_id="generalTab" />
-    <item-map filename="$(SpbProjects)ws_manager\Common\AppFrontEnd\WSFE_WinUI\WSFE_Settings\OpenTab.ctl" resource_id="OpenTab" />
-    <item-map filename="$(SpbProjects)ws_manager\Common\AppFrontEnd\WSFE_WinUI\WSFE_Settings\PerformExt.dlg" resource_id="PerformExt" />
-    <item-map filename="$(SpbProjects)ws_manager\Common\AppFrontEnd\WSFE_WinUI\WSFE_Settings\performExtCtl.ctl" resource_id="performExtCtl" />
-    <item-map filename="$(SpbProjects)ws_manager\Common\AppFrontEnd\WSFE_WinUI\WSFE_Settings\RunTab.ctl" resource_id="RunTab" />
-    <item-map filename="$(SpbProjects)ws_manager\Common\AppFrontEnd\WSFE_WinUI\WSFE_Settings\VirtualDirList.dlg" resource_id="VirtualDirList" />
-    <item-map filename="$(SpbProjects)ws_manager\Common\AppFrontEnd\WSFE_WinUI\WSFE_Settings\virtualDirTab.ctl" resource_id="virtualDirTab" />
-    <item-map filename="$(SpbProjects)ws_manager\Common\AppFrontEnd\WSFE_WinUI\WSFE_Settings\wsfe_Settings.dlg" resource_id="wsfe_Settings" />
-    <item-map filename="$(SpbProjects)ws_manager\Common\AppFrontEnd\WSFE_WinUI\WSFE_Settings\WSFE_Settings.pack" />
-    <item-map filename="$(SpbProjects)ws_manager\Common\http_Client\http_Client.pack" />
-    <item-map filename="$(SpbProjects)ws_manager\Common\WS_EventManager\WS_EventManager.pack" />
-    <item-map filename="$(SpbSolutions)Packs\Gui\AboutDialog\AboutDialog.pack" />
-    <item-map filename="$(SpbSolutions)Packs\Gui\FormSplittedLayout\FormSplittedLayout.pack" />
-    <item-map filename="$(SpbSolutions)Packs\Logic\EntityRegistry\EntityRegistry.pack" />
-    <item-map filename="$(SpbSolutions)Packs\Logic\spbAbstracts\spbAbstracts.pack" />
-    <item-map filename="$(SpbSolutions)Packs\Logic\spbTree\spbTree.pack" />
-    <item-map filename="$(SpbSolutions)Packs\Logic\SpbXmlLiteSupport\SpbXmlLiteSupport.pack" />
-    <item-map filename="$(SpbSolutions)Packs\Logic\trace\trace.pack" />
-    <item-map filename="$(SpbSolutions)Packs\Logic\Web\tsMapM_redBlack\tsMapM_redBlack.pack" />
-    <item-map filename="$(SpbSolutions)Packs\Logic\Web\xmlHttpEventSink\xmlHttpEventSink.pack" />
-    <item-map filename="$(SpbSolutions)Packs\Logic\XmlDocument\XmlDocument.pack" />
+    <item-map filename="$(SpbProjects)WS_manager\Common\AppBackEnd\WS_BackEnd\WS_BackEnd.pack" />
+    <item-map filename="$(SpbProjects)WS_manager\Common\AppBackEnd\WSBE_Connector\WSBE_Connector.pack" />
+    <item-map filename="$(SpbProjects)WS_manager\Common\AppBackEnd\WSBE_Options\WSBE_Options.pack" />
+    <item-map filename="$(SpbProjects)WS_manager\Common\AppBackEnd\WSBE_PerformByExt\WSBE_PerformByExt.pack" />
+    <item-map filename="$(SpbProjects)WS_manager\Common\AppBackEnd\WSBE_PerformCMD\wsBE_PerformCMD.pack" />
+    <item-map filename="$(SpbProjects)WS_manager\Common\AppBackEnd\WSBE_Performer\WSBE_Performer.pack" />
+    <item-map filename="$(SpbProjects)WS_manager\Common\AppBackEnd\WSBE_PerformVIP\WSBE_PerformVIP.pack" />
+    <item-map filename="$(SpbProjects)WS_manager\Common\AppBackEnd\WSBE_Tasks\WSBE_Tasks.pack" />
+    <item-map filename="$(SpbProjects)WS_manager\Common\AppBackEnd\WSFE_Messages\WSFE_Messages.pack" />
+    <item-map filename="$(SpbProjects)WS_manager\Common\AppFrontEnd\FE_Icons\wsm.ico" resource_id="application_icon" />
+    <item-map filename="$(SpbProjects)WS_manager\Common\AppFrontEnd\WS_FrontEnd\WS_FrontEnd.pack" />
+    <item-map filename="$(SpbProjects)WS_manager\Common\AppFrontEnd\WSBE_Messages\WSBE_Messages.pack" />
+    <item-map filename="$(SpbProjects)WS_manager\Common\AppFrontEnd\WSFE_Command\WSFE_Command.pack" />
+    <item-map filename="$(SpbProjects)WS_manager\Common\AppFrontEnd\WSFE_Connector\WSFE_Connector.pack" />
+    <item-map filename="$(SpbProjects)WS_manager\Common\AppFrontEnd\WSFE_Form\WSFE_Form.frm" resource_id="WSFE_Form" />
+    <item-map filename="$(SpbProjects)WS_manager\Common\AppFrontEnd\WSFE_Form\WSFE_Form.pack" />
+    <item-map filename="$(SpbProjects)WS_manager\Common\AppFrontEnd\wsFE_Images\wsFE_Images.pack" />
+    <item-map filename="$(SpbProjects)WS_manager\Common\AppFrontEnd\WSFE_SourceList\WSFE_SourceList.pack" />
+    <item-map filename="$(SpbProjects)WS_manager\Common\AppFrontEnd\WSFE_SourceTree\WSFE_SourceTree.pack" />
+    <item-map filename="$(SpbProjects)WS_manager\Common\AppFrontEnd\WSFE_Tasks\WSFE_Tasks.pack" />
+    <item-map filename="$(SpbProjects)WS_manager\Common\AppFrontEnd\WSFE_WinUI\WSFE_Settings\addErrorWarningWords.dlg" resource_id="idd_adderrorwarningwords" />
+    <item-map filename="$(SpbProjects)WS_manager\Common\AppFrontEnd\WSFE_WinUI\WSFE_Settings\addNewSourceType.dlg" resource_id="addNewSourceType" />
+    <item-map filename="$(SpbProjects)WS_manager\Common\AppFrontEnd\WSFE_WinUI\WSFE_Settings\commandTab.ctl" resource_id="commandTab" />
+    <item-map filename="$(SpbProjects)WS_manager\Common\AppFrontEnd\WSFE_WinUI\WSFE_Settings\editVirtualDir.dlg" resource_id="editVirtualDir" />
+    <item-map filename="$(SpbProjects)WS_manager\Common\AppFrontEnd\WSFE_WinUI\WSFE_Settings\generalTab.ctl" resource_id="generalTab" />
+    <item-map filename="$(SpbProjects)WS_manager\Common\AppFrontEnd\WSFE_WinUI\WSFE_Settings\localOptions.dlg" resource_id="idd_localoptions" />
+    <item-map filename="$(SpbProjects)WS_manager\Common\AppFrontEnd\WSFE_WinUI\WSFE_Settings\performExt2.ctl" resource_id="id_ctl_1" />
+    <item-map filename="$(SpbProjects)WS_manager\Common\AppFrontEnd\WSFE_WinUI\WSFE_Settings\virtualDirTab.ctl" resource_id="virtualDirTab" />
+    <item-map filename="$(SpbProjects)WS_manager\Common\AppFrontEnd\WSFE_WinUI\WSFE_Settings\wsfe_Settings.dlg" resource_id="wsfe_Settings" />
+    <item-map filename="$(SpbProjects)WS_manager\Common\AppFrontEnd\WSFE_WinUI\WSFE_Settings\WSFE_Settings.pack" />
+    <item-map filename="$(SpbProjects)WS_manager\Common\http_Client\http_Client.pack" />
+    <item-map filename="$(SpbProjects)WS_manager\Common\WS_EventManager\WS_EventManager.pack" />
+    <item-map filename="$(SpbVipTools)Doc\VicShadow.jpg" resource_id="id_jpg_vicshadow" />
+    <item-map filename="$(SpbVipTools)Packs\Gui\AboutDialog\AboutDialog.dlg" resource_id="AboutDialog" />
+    <item-map filename="$(SpbVipTools)Packs\Gui\AboutDialog\AboutDialog.pack" />
+    <item-map filename="$(SpbVipTools)Packs\Gui\FormSplittedLayout\FormSplittedLayout.pack" />
+    <item-map filename="$(SpbVipTools)Packs\Gui\FormSplittedLayout\SplitContainerControl.ctl" resource_id="SplitContainerControl" />
+    <item-map filename="$(SpbVipTools)Packs\Logic\EntityRegistry\EntityRegistry.pack" />
+    <item-map filename="$(SpbVipTools)Packs\Logic\spbAbstracts\spbAbstracts.pack" />
+    <item-map filename="$(SpbVipTools)Packs\Logic\spbTree\spbTree.pack" />
+    <item-map filename="$(SpbVipTools)Packs\Logic\SpbXmlLiteSupport\SpbXmlLiteSupport.pack" />
+    <item-map filename="$(SpbVipTools)Packs\Logic\trace\trace.pack" />
+    <item-map filename="$(SpbVipTools)Packs\Logic\Web\tsMapM_redBlack\tsMapM_redBlack.pack" />
+    <item-map filename="$(SpbVipTools)Packs\Logic\XmlDocument\XmlDocument.pack" />
     <item-map filename="main.manifest" />
     <item-map filename="main.pack" />
-    <item-map filename="WorkSpace.ico" resource_id="idi_workspace" />
     <item-map filename="WorkSpaceManager\WorkSpaceManager.pack" />
   </item-set>
   <setting-set key="target">

@@ -1,10 +1,10 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
-    <assemblyIdentity 
-        name="solutionManager" 
-        version="1.0.0.0" 
-        processorArchitecture="X86" 
-        type="win32" 
+    <assemblyIdentity
+        name="WSMfrontend"
+        version="1.0.0.0"
+        processorArchitecture="X86"
+        type="win32"
     />
     <trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
         <security>
@@ -13,16 +13,4 @@
             </requestedPrivileges>
         </security>
     </trustInfo>
-    <dependency>
-        <dependentAssembly>
-            <assemblyIdentity 
-                name="Microsoft.Windows.Common-Controls" 
-                version="6.0.0.0" 
-                processorArchitecture="X86" 
-                type="win32" 
-                publicKeyToken="6595b64144ccf1df" 
-                language="*" 
-            />
-        </dependentAssembly>
-    </dependency>
 </assembly>

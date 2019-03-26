@@ -7,7 +7,7 @@ predicates
     getReturnValue : () -> optional{tuple{string,string}}.
 
 properties
-    editName_ctl : editControl.
-    editValue_ctl : editControl.
+    editName_P : editControl (o).
+    editValue_P : editControl (o).
 
 end interface addNewSourceType

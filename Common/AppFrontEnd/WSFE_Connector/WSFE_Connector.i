@@ -7,8 +7,8 @@ predicates
     notify:(notifyMethod_D,integer EventID,namedValue* EventParameters).
 
 properties
-    wsFE_P:ws_FrontEnd.
-    predicateDelayedQueue_P:monitorQueue{tuple{predicate{unsigned},unsigned}}.
+    wsFE_P : ws_FrontEnd.
+    predicateDelayedQueue_P : monitorQueue{tuple{predicate{unsigned},unsigned}}.
 predicates
     performDelayed:().
 
@@ -19,5 +19,6 @@ predicates
     wSFE_SourceList:()->wSFE_SourceList.
     wsBE_Messages:()->wsBE_Messages.
     ws_Events:()->ws_eventManager.
+    wsFE_Images:()->wsFE_Images.
 
 end interface wsFE_Connector

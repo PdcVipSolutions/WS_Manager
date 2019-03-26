@@ -20,6 +20,7 @@ facts
 
 clauses
     new(EventManager):-
+        /*No output stream initialized here, no write of Debug operations available here*/
         eventManager_V:=EventManager.
 
 facts
@@ -48,8 +49,6 @@ clauses
         do
             eventManager_V:eventMsg_P:notify(EventID_out, Parameters_out)
         end foreach.
-    notifyViaHttp(_TransactionID,_NotifyMethod,_EventID,_EventParameters):-
-        exception::raise_User("Unexpected alternative").
 
 predicates
     requestDataChain:(integer TryCounter, integer EventID, integer TransactionID).
@@ -89,18 +88,18 @@ clauses
         RequestObject:method := Method,
         RequestObject:params := some(json::o(JSON)),
         RequestString = RequestObject:asString(),
-        httpPost2(server_Url_P, RequestString).
+        httpPost2(server_Url_P,Method,RequestString).
 
 predicates
-    httpPost2 : (string Url, string RequestString).
+    httpPost2 : (string Url, string Method,string RequestString).
 clauses
-    httpPost2(URL, RequestString) :-
+    httpPost2(URL, Method, RequestString) :-
         XmlHttp_P=serverXMLHTTP60::new(),
         try
             XmlHttp_P:open_predicate("POST", URL, comDomains::boolean(false), comDomains::null, comDomains::null),
             XmlHttp_P:setRequestHeader("Content-Type", "application/json-rpc; charset=UTF-8"),
             XmlHttp_P:send(comDomains::string(RequestString)),
-            handleResponse(XmlHttp_P)
+            handleResponse(Method,XmlHttp_P)
         catch TraceId do
             if ComException = exception::tryGetDescriptor(TraceId, exceptionHandling_exception::genericComException)
                 and unsigned(0x800C0005) = exception::tryGetExtraInfo(ComException, exceptionHandling_exception::hResult_parameter)
@@ -116,42 +115,46 @@ facts
     httpExchangeData_F:(integer TransactionID,integer EventID,namedValue* Parameters).
 
 predicates
-    handleResponse : (serverXMLHTTP60 XmlHttp).
+    handleResponse : (string Method,serverXMLHTTP60 XmlHttp).
 clauses
-    handleResponse(XmlHttp_P) :-
+    handleResponse(Method,XmlHttp_P) :-
         StatusCode = XmlHttp_P:status,
         if 200 = StatusCode then
             Resp = XmlHttp_P:responseText,
-            JsonResp = jsonObject::fromString(Resp),
-            if Error = JsonResp:tryGet_object("error") then
-                if Code = Error:tryGet_integer("code") then
-                    stdio::writef("Code: %\n", Code)
-                end if,
-                if Msg = Error:tryGet_string("message") then
-                    stdio::writef("Message: %\n", Msg)
-                end if,
-                if Data = Error:tryGet_string("data") then
-                    stdio::writef("Data: %\n", Data)
-                else
-                    stdio::writef("Error: %\n", Error:asString())
-                end if
-            elseif JsonObj = JsonResp:tryGet_Object("result") then
-                foreach Key=JsonObj:map:getKey_nd() do
-                    if not(Key=toString(wsBE_NoData_C)) then
-                        if TransactionID=JsonObj:tryGet_integer(transactionID_C) then
-                        else
-                            TransactionID=0
-                        end if,
-                        if not(Key=transactionID_C) then
-                            NamedValueListAsString=JsonObj:get_String(Key),
-                            Parameters=toTerm(namedValue_List,NamedValueListAsString),
-                            assertz(httpExchangeData_F(TransactionID,toTerm(Key),Parameters))
-                        end if
-                    end if
-                end foreach
-            else
+            if Method=methodRequestChain_P and Resp="" then
                 succeed()
-    %            stdio::writef("Unexpected response: %\n", Resp)
+            else
+                JsonResp = jsonObject::fromString(Resp),
+                if Error = JsonResp:tryGet_object("error") then
+                    if Code = Error:tryGet_integer("code") then
+                        stdio::writef("Code: %\n", Code)
+                    end if,
+                    if Msg = Error:tryGet_string("message") then
+                        stdio::writef("Message: %\n", Msg)
+                    end if,
+                    if Data = Error:tryGet_string("data") then
+                        stdio::writef("Data: %\n", Data)
+                    else
+                        stdio::writef("Error: %\n", Error:asString())
+                    end if
+                elseif JsonObj = JsonResp:tryGet_Object("result") then
+                    foreach Key=JsonObj:map:getKey_nd() do
+                        if not(Key=toString(wsBE_NoData_C)) then
+                            if TransactionID=JsonObj:tryGet_integer(transactionID_C) then
+                            else
+                                TransactionID=0
+                            end if,
+                            if not(Key=transactionID_C) then
+                                NamedValueListAsString=JsonObj:get_String(Key),
+                                Parameters=toTerm(namedValue_List,NamedValueListAsString),
+                                assertz(httpExchangeData_F(TransactionID,toTerm(Key),Parameters))
+                            end if
+                        end if
+                    end foreach
+                else
+                    succeed()
+        %            stdio::writef("Unexpected response: %\n", Resp)
+                end if
             end if
         else % 200 <> StatusCode
             StatusText = XmlHttp_P:statusText,

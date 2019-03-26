@@ -16,12 +16,12 @@ facts - command_FB
     moveRemoveContentHandling_V:moveRemoveCommand.
     performSourceHandling_V:performSourceCommand.
 
-    buildBlockMenu_V:ribbonControl::block.
-    buildAllBlockMenu_V:ribbonControl::block.
+%    buildBlockMenu_V:ribbonControl::block.
+%    buildAllBlockMenu_V:ribbonControl::block.
     pauseRunBlockMenu_V:ribbonControl::block.
     performSourceSection_V:ribbonControl::section.
 
-    localOptionsShowCmd : checkCommand:=erroneous.
+    localOptionsShowCmd : command:=erroneous.
 
     showFilterCmd : menucommand:=erroneous.
     ws_Form_V : window.
@@ -39,14 +39,15 @@ clauses
 
         moveRemoveContentHandling_V:=moveRemoveCommand::new(wsFE_P),
         MoveRemoveBlockMenu=moveRemoveContentHandling_V:initMoveRemoveNode_Menu(WS_Form),
-%        moveRemoveContentHandling_V:addChangeListener(),
 
         sourceContentHandling_V:=sourceContentCommand::new(wsFE_P),
         AddEntityBlockMenu=sourceContentHandling_V:initWS_AddRemoveSource_Menu(WS_Form),
 
         performSourceHandling_V:=performSourceCommand::new(wsFE_P),
-        buildBlockMenu_V:=performSourceHandling_V:initWS_PerformSource_Menu(WS_Form),
-        buildAllBlockMenu_V:=performSourceHandling_V:initWS_PerformAllSource_Menu(WS_Form),
+
+        PerformCmdBlock = performSourceHandling_V:initWS_PerformCommand_Menu(WS_Form),
+        PerformCmdBlockRO = reOrderPerformBlock(PerformCmdBlock),
+
         ResetRunBlockMenu=performSourceHandling_V:initWS_PerformReset_Menu(WS_Form),
         pauseRunBlockMenu_V:=performSourceHandling_V:initWS_PerformPauseRun_Menu(WS_Form),
         performSourceHandling_V:addChangeListener(),
@@ -56,12 +57,24 @@ clauses
         AboutCmd:ribbonLabel := ws_Events():getString(cmdAbout_C),
         AboutCmd:tipTitle := toolTip::tip(ws_Events():getString(tipAbout_C)),
         AboutCmd:icon := some(icon::createFromImages(
-            [bitmap::createFromBinary(helpIcon16_C),
-            bitmap::createFromBinary(helpIcon32_C)
+            [bitmap::createFromBinary(aboutIcon16_C),
+            bitmap::createFromBinary(aboutIcon32_C)
             ])),
         AboutCmd:run := about,
         AboutCmd:enabled := true,
-        HelpAndAbout = block([[cmd(AboutCmd:id, imageAndText(vertical))]]),
+        About = block([[cmd(AboutCmd:id, imageAndText(vertical))]]),
+
+        HelpCmd = command::new(WS_Form,"help"),
+        HelpCmd:menuLabel := ws_Events():getString(cmdHelp_C),
+        HelpCmd:ribbonLabel := ws_Events():getString(cmdHelp_C),
+        HelpCmd:tipTitle := toolTip::tip(ws_Events():getString(tipHelp_C)),
+        HelpCmd:icon := some(icon::createFromImages(
+            [bitmap::createFromBinary(helpIcon16_C),
+            bitmap::createFromBinary(helpIcon32_C)
+            ])),
+        HelpCmd:run := help,
+        HelpCmd:enabled := true,
+        Help = block([[cmd(HelpCmd:id, imageAndText(vertical))]]),
 
         DesignCmd = command::new(WS_Form, "ribbon.design"),
         DesignCmd:menuLabel := ws_Events():getString(cmdDesign_C),
@@ -85,7 +98,7 @@ clauses
         SettingsDlgCmd:run := onSettingsDlg,
         SettingsDlgCmd:enabled := true,
         SettingsDlg = block([[cmd(SettingsDlgCmd:id, imageAndText(vertical))]]),
-        localOptionsShowCmd := checkCommand::new(WS_Form, "showlocaloptions"),
+        localOptionsShowCmd := command::new(WS_Form, "showlocaloptions"),
         localOptionsShowCmd:menuLabel := ws_Events():getString(cmdLocalOptions_C),
         localOptionsShowCmd:ribbonLabel := ws_Events():getString(cmdLocalOptions_C),
         localOptionsShowCmd:tipTitle := toolTip::tip(ws_Events():getString(tipLocalOptions_C)),
@@ -95,8 +108,8 @@ clauses
                     [bitmap::createFromBinary(showLocalOptions16_C),
                     bitmap::createFromBinary(showLocalOptions32_C)
                     ])),
-        localOptionsShowCmd:checked := true,
-        localOptionsShowCmd:checkChangeEvent:addListener({:- wsFE_Form():showLocalOptionsPanel(localOptionsShowCmd:checked)}),
+%        localOptionsShowCmd:checked := true,
+        localOptionsShowCmd:run := onLocalOptionsDlg,
         LocalOptionsShow = block([[cmd(localOptionsShowCmd:id, imageAndText(vertical))]]),
 
         initFilterCommand(WS_Form),
@@ -109,6 +122,8 @@ clauses
             {:-
             AboutCmd:ribbonLabel := ws_Events():getString(cmdAbout_C),
             AboutCmd:tipTitle := toolTip::tip(ws_Events():getString(tipAbout_C)),
+            HelpCmd:ribbonLabel := ws_Events():getString(cmdHelp_C),
+            HelpCmd:tipTitle := toolTip::tip(ws_Events():getString(tipHelp_C)),
             DesignCmd:ribbonLabel := ws_Events():getString(cmdDesign_C),
             DesignCmd:tipTitle := toolTip::tip(ws_Events():getString(tipDesign_C)),
             SettingsDlgCmd:ribbonLabel := ws_Events():getString(cmdOptions_C),
@@ -116,13 +131,34 @@ clauses
             showFilterCmd:ribbonLabel := ws_Events():getString(cmdFilter_C),
             showFilterCmd:tipTitle := toolTip::tip(ws_Events():getString(tipFilter_C)),
             localOptionsShowCmd:ribbonLabel := ws_Events():getString(cmdLocalOptions_C),
-            localOptionsShowCmd:tipTitle := toolTip::tip(ws_Events():getString(tipLocalOptions_C))
+            localOptionsShowCmd:tipTitle := toolTip::tip(ws_Events():getString(tipLocalOptions_C)),
+            updateSectionLabels(convert(wsFE_Form,WS_Form))
             }),
         performSourceSection_V := section("actions",ws_Events():getString(sctSrcActions),toolTip::noTip,core::none,
-                                                              [buildBlockMenu_V, buildAllBlockMenu_V, pauseRunBlockMenu_V, ResetRunBlockMenu]),
-        AboutCmdSection = section("about",ws_Events():getString(sctHelpAbout),toolTip::noTip,core::none,[FilterCommand,SettingsDlg,LocalOptionsShow,Design,HelpAndAbout]),
-        predefinedLayout_V:=[WorkSpaceSection, MoveRemoveSection,ProjectSection,performSourceSection_V,AboutCmdSection],
-        convert(wsFE_Form,WS_Form):ribbonControl_ctl:layout := predefinedLayout_V.
+                                                        list::append(PerformCmdBlockRO,[pauseRunBlockMenu_V, ResetRunBlockMenu])),
+        OptionsSections = section("options",ws_Events():getString(sctOptions),toolTip::noTip,core::none,[FilterCommand,SettingsDlg,LocalOptionsShow,Design]),
+        AboutCmdSection = section("about",ws_Events():getString(sctHelpAbout),toolTip::noTip,core::none,[Help,About]),
+        predefinedLayout_V:=[WorkSpaceSection, MoveRemoveSection,ProjectSection,performSourceSection_V,OptionsSections,AboutCmdSection],
+        convert(wsFE_Form,WS_Form):ribbonControl_P:layout := predefinedLayout_V.
+%        convert(wsFE_Form,WS_Form):ribbonControl_ctl:colorBackgroundGradientFrom := ribbonCommand::vpi(vpiDomains::color_WhiteSmoke).
+
+class predicates
+    reOrderPerformBlock : (block* BlockList) -> block* BlockList.clauses
+    reOrderPerformBlock([block([Cmd1]),block([Cmd2])|RestBlock]) = Result :-
+        !,
+        Result = [block([Cmd1, Cmd2]) | reOrderPerformBlock(RestBlock)].
+    reOrderPerformBlock(Block) = Block.
+
+predicates
+    updateSectionLabels : (wsFE_Form WS_Form).
+clauses
+    updateSectionLabels(WS_Form):-
+        foreach tuple(Index, StrIndex) in [tuple(0, sctWorkspace), tuple(1, sctManipulate), tuple(2, sctSrcEditing), tuple(3, sctSrcActions), tuple(4, sctOptions), tuple(5, sctHelpAbout)] do
+            if section(section(Id, _, TipText, Icon, Blocks)) = WS_Form:ribbonControl_P:layoutTryGetElement(predefinedLayout_V, [Index]) then
+                predefinedLayout_V:=WS_Form:ribbonControl_P:layoutUpdateElement(predefinedLayout_V, [Index], section(section(Id, ws_Events():getString(StrIndex), TipText, Icon, Blocks)))
+            end if
+        end foreach,
+        WS_Form:ribbonControl_P:layout := predefinedLayout_V.
 
 predicates
     initFilterCommand : (window WS_Form).
@@ -152,6 +188,13 @@ predicates
 clauses
     about(_):-
         wsFE_Tasks():about().
+
+predicates
+    help:(command).
+clauses
+    help(_):-
+        wsFE_Tasks():help().
+
 facts
     predefinedLayout_V : layout:=erroneous.
 
@@ -161,11 +204,12 @@ clauses
     onDesign(_) :-
         DesignerDlg = ribbonDesignerDlg::new(wsFE_Form()),
         DesignerDlg:cmdHost := wsFE_Form(),
-        DesignerDlg:designLayout := wsFE_Form():ribbonControl_ctl:layout,
+        DesignerDlg:designLayout := wsFE_Form():ribbonControl_P:layout,
         DesignerDlg:predefinedSections := predefinedLayout_V,
         DesignerDlg:show(),
         if DesignerDlg:isOk() then
-            wsFE_Form():ribbonControl_ctl:layout := DesignerDlg:designLayout
+            wsFE_Form():ribbonControl_P:layout := DesignerDlg:designLayout,
+            wsFE_Form():wsFE_Command_P:predefinedLayout_V := wsFE_Form():ribbonControl_P:layout
         end if.
 
 predicates
@@ -173,6 +217,12 @@ predicates
 clauses
     onSettingsDlg(_) :-
         notify(methodRequest,ws_EventManager::setupSettings_C, []).
+
+predicates
+    onLocalOptionsDlg : (command).
+clauses
+    onLocalOptionsDlg(_) :-
+        wsFE_Form():showLocalOptionsDialog().
 
 clauses
     disabledRibbonPauseBlock():-
@@ -183,12 +233,17 @@ clauses
         performSourceHandling_V:setEnabledExecuteCmd(Value).
 
 clauses
+    updateCommandRibbon(Index, CmdName, Enabled):-
+        performSourceHandling_V:updateCommandRibbon(Index, CmdName, Enabled).
+%        wsFE_Form():ribbonControl_ctl:invalidate().
+
+clauses
     restoreRibbonState(ValueList):-
         foreach namedValue(Name, boolean(Value)) in ValueList do
             if Name = "reset" then
                 performSourceHandling_V:restoreResetState(Value)
-            elseif Name = "local" then
-                localOptionsShowCmd:checked := Value
+%            elseif Name = "local" then
+%                localOptionsShowCmd:checked := Value
             end if
         end foreach.
 

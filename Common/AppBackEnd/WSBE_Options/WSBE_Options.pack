@@ -1,6 +1,10 @@
 ﻿#include @"ws_manager\common\AppBackEnd\WSBE_Options\WSBE_Options.ph"
 
 % privately used packages
+#include @"pfc\collection\M\setM_redBlack\setM_redBlack.ph"
+#include @"pfc\vpi\vpiDomains\vpiDomains.ph"
+#include @"pfc\std\std.ph"
+#include @"pfc\namedValue\namedValue.ph"
 #include @"pfc\memory\memory.ph"
 #include @"pfc\list\list.ph"
 #include @"pfc\exception\exception.ph"

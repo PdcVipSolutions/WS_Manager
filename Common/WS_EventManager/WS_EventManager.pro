@@ -13,7 +13,6 @@ facts
 
     xmlLng : xmlDocument.
     isAddNewString : boolean := false.
-    currentLng : string := defaultLng.
     currentLng_P : varM{string}.
 
 clauses
@@ -38,7 +37,7 @@ clauses
         toString(file::readBinary(languageWSMFile_C)).
 
 constants
-    languageWSMFile_C = @"LanguageWSM.xml".
+    languageWSMFile_C = @"wsmAppData\LanguageWSM.xml".
 predicates
     loadLanguageWSM : ().
 #if workSpaceManager::isBackEnd_app = true #then
@@ -91,11 +90,9 @@ clauses
         if _ = xmlLng:getNode_nd([root(), child(string::concat("row",toString(Key)), {(_)})]) then
         else
             StrElement = xmlElement::new("", string::concat("row",toString(Key)),xmlLng:root_P),
-%            StrElement:name_P := string::concat("row",toString(Key)),
             xmlLng:root_P:addNode(StrElement),
             StrElement:addAttribute("comment", Comment),
             LngElement = xmlElement::new("",defaultLng, StrElement),
-%            LngElement:name_P := defaultLng,
             LngElement:addText(Value),
             StrElement:addNode(LngElement),
             isAddNewString := true
@@ -113,7 +110,7 @@ clauses
         XmlOptions:close(),
         setCurrentLng(CurrentLng).
 
-predicates
+class predicates
     lngStringElement : (integer Key [out],string Value [out],string Comment [out]) multi.
     lngStringElement_dt : (integer Key,string Value [out],string Comment [out]).
 clauses
@@ -123,7 +120,7 @@ clauses
         !.
     lngStringElement_dt(_, "Unexpected", "").
 
-    lngStringElement(noPathStatus_C, "NoPath", "Status").
+    lngStringElement(noPathStatus_C, "No File", "Status").
     lngStringElement(stoppedStatus_C, "Stopped", "Status").
     lngStringElement(builtStatus_C, "Built", "Status").
     lngStringElement(doneStatus_C, "Done", "Status").
@@ -137,9 +134,9 @@ clauses
     lngStringElement(questionTitle_C, "Question", "Dialog Title").
     lngStringElement(qstSaveNewWSM_C, "Save contents to new workspace?", "Question Text").
     lngStringElement(removeDlgTitle_C, "Remove Node confirmation", "Dialog Title").
-    lngStringElement(removeDlgText_C, "Are you sure you want to delete node", "Question Text").
+    lngStringElement(removeDlgText_C, "Are you sure you want to delete node?", "Question Text").
     lngStringElement(nowRunning_C, "Running", "Left bottom StatusBar").
-    lngStringElement(userRefusedVN_C, "User refused to define VirtualName", "Log message").
+    lngStringElement(userRefusedVN_C, "User refused to define WSM-variable", "Log message").
     lngStringElement(cmdDeleteNode_C, "Delete Node", "Menu label of Ribbon button").
     lngStringElement(tipDeleteNode_C, "Delete Selected Node", "Tooltip of Ribbon button").
     lngStringElement(cmdMoveNodeUp_C, "Node Up", "Menu label of Ribbon button").
@@ -198,7 +195,7 @@ clauses
     lngStringElement(tipLocalOptions_C, "Show Panel of File Local Options", "Tooltip of Ribbon button").
     lngStringElement(sctWorkspace, "WorkSpace Editing", "Label of Ribbon section").
     lngStringElement(sctManipulate, "Manipulate Entity", "Label of Ribbon section").
-    lngStringElement(sctSrcEditing, "File Editing", "Label of Ribbon section").
+    lngStringElement(sctSrcEditing, "Add File(s)", "Label of Ribbon section").
     lngStringElement(sctSrcActions, "File Actions", "Label of Ribbon section").
     lngStringElement(sctHelpAbout, "Help & About", "Label of Ribbon section").
     lngStringElement(pmnAdd, "Add", "AddMode item of Local options panel").
@@ -208,8 +205,8 @@ clauses
     lngStringElement(txtExecCmdDisabled, "Execute command disabled", "Result String for Execute command in Local option panel").
     lngStringElement(txtNewWS, "New workspace", "Application TitleBar").
     lngStringElement(txtReadOnly, "[ReadOnly]", "Application TitleBar").
-    lngStringElement(colCmdArgument, "Command Argument", "Column Label of Local options panel").
-    lngStringElement(colLocalValue, "Local Value", "Column Label of Local options panel").
+    lngStringElement(colCmdArgument, "Local Argument", "Column Label of Local options panel").
+    lngStringElement(colLocalSuffix, "Local Suffix", "Column Label of Local options panel").
     lngStringElement(colAddMode, "Add Mode", "Column Label of Local options panel").
     lngStringElement(colResultStr, "Result string", "Column Label of Local options panel").
     lngStringElement(colWhereMode, "Where", "Column Label of Local options panel").
@@ -219,7 +216,7 @@ clauses
     lngStringElement(rowSuffix, "Run Suffix", "Command Argument Name of Local options panel").
     lngStringElement(rowExecOn, "Execute enabled", "Command Argument Name of Local options panel").
     lngStringElement(rowExecute, "Execute", "Command Argument Name of Local options panel").
-    lngStringElement(qstMoveSource, "Are you sure you want to move file to group", "Question Text").
+    lngStringElement(qstMoveSource, "Are you sure you want to move file to group?", "Question Text").
     lngStringElement(colSourceFile, "File", "Column Label of Source's ListView Control").
     lngStringElement(colPath, "Path", "Column Label of Source's ListView Control").
     lngStringElement(colStatus, "State", "Column Label of Source's ListView Control").
@@ -254,15 +251,16 @@ clauses
     lngStringElement(cmdOpen_C, "Open", "Tab label of Options Dialog").
     lngStringElement(ttlAdd_pb, "&Add", "Dialog button text").
     lngStringElement(ttlDelete_pb, "&Delete", "Dialog button text").
-    lngStringElement(ttlCmpName, "File Type Name:", "Static text of Options Dialog").
+    lngStringElement(ttlCmpName, "File Type Expert:", "Static text of Options Dialog").
     lngStringElement(txtResultStr, " Result % Command Line ", "Groupbox title template text of Options Dialog").
     lngStringElement(ttlBrowse_pb, "Browse...", "Dialog button text").
     lngStringElement(txtOpenFormat, "[%] [%] \"$(SourceFile)\"", "Template of Format Command (Open)").
     lngStringElement(txtEditorFile, "Editor File", "Static Text of Open Command Tab").
+    lngStringElement(txtApplicationFile, "Application", "Static Text of Command Tab").
     lngStringElement(txtArguments, "Arguments", "Static Text of Open/Exec Command Tab").
     lngStringElement(txtFormatCmd, "Format Command", "Prefix of Static Text").
-    lngStringElement(txtCodePage, "Code page", "Static Text of Run Command Tab").
-    lngStringElement(txtStreamMode, "Stream mode:", "Static Text of Run Command Tab").
+    lngStringElement(txtCodePage, "Coding", "Static Text of Run Command Tab").
+    lngStringElement(txtStreamMode, "Mode:", "Static Text of Run Command Tab").
     lngStringElement(txtRunFile, "Run File", "Static Text of Run Command Tab").
     lngStringElement(gbArgForRun, " Arguments for: ", "Groupbox Text of Run Command Tab").
     lngStringElement(txtRunMode, "Run Mode:", "Static Text of Run Command Tab").
@@ -274,8 +272,8 @@ clauses
     lngStringElement(cbCmdEnabled, "Execute command enabled", "Checkbox text of Execute Command Tab").
     lngStringElement(ttlNew_pb, "&New", "Dialog button text").
     lngStringElement(ttlEdit_pb, "&Edit", "Dialog button text").
-    lngStringElement(ttlCreateVirtDir, "Create Virtual Directory", "VirtDir Dialog title (New)").
-    lngStringElement(ttlEditVirtDit, "Edit Virtual Directory", "VirtDir Dialog title (Edit)").
+    lngStringElement(ttlCreateVirtDir, "Create WSM-variable", "VirtDir Dialog title (New)").
+    lngStringElement(ttlEditVirtDit, "Edit WSM-variable", "VirtDir Dialog title (Edit)").
     lngStringElement(txtName, "Name:", "Static text of VirtDir Dialog").
     lngStringElement(txtDir, "Directory:", "Static text of VirtDir Dialog").
     lngStringElement(txtError, "This Name exists!", "Warning text of VirtDir Dialog").
@@ -293,23 +291,55 @@ clauses
     lngStringElement(tipFilter_C, "Choose Show File Type", "Tooltip of Ribbon button").
     lngStringElement(ttlMiscTab, "Misc", "Title Misc Tab of Settings dialog").
     lngStringElement(ttlSourceTypeTab, "File Type", "Title Source Tab of Settings dialog").
-    lngStringElement(ttlVirtDirTab, "Virtual Directory", "Title VirtDir Tab of Settings dialog").
+    lngStringElement(ttlVirtDirTab, "WSM-Variables", "Title VirtDir Tab of Settings dialog").
+    lngStringElement(cbInvokeWinAss, "Invoke with Windows Association", "Checkbox text of Command Tab").
+    lngStringElement(txtDefCommandFE, "Default Command (Mouse Double Click)", "Checkbox text of Command Tab").
+    lngStringElement(cbStreamMode, "Handle", "CheckBox Text of Run Command Tab").
+    lngStringElement(cbPossibleAll, "Participates in All", "Checkbox text of Command Tab").
+    lngStringElement(runImpossible, "Run for \"%s\" impossible\n", "Warning message").
+    lngStringElement(txtClear, "Clear", "Menu item text of VirtDir Dialog").
+    lngStringElement(delVirtualDir, "Are you sure you want to delete WS variable '%s'?", "Question").
+    lngStringElement(undefinedWSV, "The WS variable <%s> is undefined!", "Error message").
+    lngStringElement(ttlWarning, "Warning", "Dialog Title").
+    lngStringElement(ttlSettings, "Workspace Settings", "Dialog title").
+    lngStringElement(pbReOrder, "ReOrder", "Dialog button text").
+    lngStringElement(cmdHelp_C, "Help", "Menu label of Ribbon button").
+    lngStringElement(tipHelp_C, "Help WorkSpaceManager", "Tooltip of Ribbon button").
+    lngStringElement(helpFile, "wsm_HelpEn.chm", "Filename of Help").
+    lngStringElement(stCommand, "Operation", "Static text").
+    lngStringElement(cbCheckStatus, "Check Status", "Checkbox text of Command tab").
+    lngStringElement(txtCommandName, "Name:", "Static text").
+    lngStringElement(removeSrcDlgText_C, "Are you sure you want to delete source(s)?", "Question Text").
+    lngStringElement(sctOptions, "Options", "Label of Ribbon section").
+    lngStringElement(pmnCheckFile, "Check Files", "Popup menu item of Group Tree Control").
+    lngStringElement(msgFormat, "The directory '%s' not exist. Do you create it?", "Warning text of VirtDir Dialog").
+    lngStringElement(colOpName, "Operation Name", "Column Label of Local options panel").
+    lngStringElement(stInputStream, "File:", "Static text title").
+    lngStringElement(gbInputStream, " Input Stream ", "Group box title").
+    lngStringElement(gbOutputStream, " Output Stream ", "Group box title").
+    lngStringElement(ttlClear_pb, "Clear", "Dialog button text").
+    lngStringElement(delKWGroupDir, "Are you sure you want to delete keywords group '%s'?", "Question").
+    lngStringElement(ttlGroupName_st, "Keyword Group", "Dialog static text").
+    lngStringElement(txtFormatAddWord, "Add % Word", "Dialog title").
+    lngStringElement(txtFormatEditWord, "Edit % Word", "Dialog title").
+    lngStringElement(txtPromptWord, "% keyword: ", "Dialog prompt").
+    lngStringElement(pbKeywords, "Keywords", "Dialog pushbutton title").
 
 clauses
     setCurrentLng(CurrentLng):-
-        currentLng := CurrentLng,
         currentLng_P:value := CurrentLng.
 
 clauses
     getLanguageList() =
         if LngNode = xmlLng:getNode_nd([root(), child("lng", {(_)})]) then
-            [tuple(toBoolean(currentLng = AttrName), AttrName, AttrValue)||tuple(_, AttrName, AttrValue) = LngNode:getAttribute_nd()]
+            [tuple(toBoolean(currentLng_P:value = AttrName), AttrName, AttrValue)||tuple(_, AttrName, AttrValue) = LngNode:getAttribute_nd()]
         else
             [tuple(true, defaultLng, "English")]
         end if.
 
 clauses
-    getString(Key) = getStringByLng(Key, currentLng).
+    getString(Key) =
+        getStringByLng(Key, currentLng_P:value).
 clauses
     getStringByLng(Key, Lng) = Value :-
         Node = xmlLng:getNode_nd([root(), child(string::concat("row",toString(Key)), {(_)})]),

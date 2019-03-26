@@ -24,8 +24,9 @@ clauses
     initComponents(EventManager, Service):-
         eventManager_P:=EventManager,
         entityRegistry_P:register(wsFE_Tasks_C, wsFE_Tasks::new(This)),
-        entityRegistry_P:register(wsBE_Messages_C,wsBE_Messages::new(This)),
+        entityRegistry_P:register(wsFE_Images_C,wsFE_Images::new(This)),
         WsFE_Form = wsFE_Form::new(This),
+        entityRegistry_P:register(wsBE_Messages_C,wsBE_Messages::new(This)),
         entityRegistry_P:register(wsFE_Form_C, WsFE_Form),
         Service:wsForm_P := WsFE_Form.
 

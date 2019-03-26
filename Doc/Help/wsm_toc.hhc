@@ -1,0 +1,84 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HTML>
+<HEAD>
+<meta name="GENERATOR" content="Microsoft&reg; HTML Help Workshop 4.1">
+<!-- Sitemap 1.0 -->
+</HEAD><BODY>
+<OBJECT type="text/site properties">
+	<param name="Window Styles" value="0x800025">
+	<param name="ImageType" value="Folder">
+<param name="Font" value="Arial Cyr,12,204">
+</OBJECT>
+<UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="&Acirc;&acirc;&aring;&auml;&aring;&iacute;&egrave;&aring;">
+		<param name="Local" value="IntroductionRu.html">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="&Ntilde;&ograve;&eth;&oacute;&ecirc;&ograve;&oacute;&eth;&agrave; &iuml;&eth;&egrave;&euml;&icirc;&aelig;&aring;&iacute;&egrave;&yuml;">
+		<param name="Local" value="InitialActionsRu.html">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="&Acirc;&ucirc;&aacute;&icirc;&eth; &szlig;&ccedil;&ucirc;&ecirc;&agrave; &Egrave;&iacute;&ograve;&aring;&eth;&ocirc;&aring;&eacute;&ntilde;&agrave;">
+		<param name="Local" value="InitialActionsRu.html#SetLanguage">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="&Iacute;&agrave;&ntilde;&ograve;&eth;&icirc;&eacute;&ecirc;&agrave; &iuml;&agrave;&iacute;&aring;&euml;&egrave; &oacute;&iuml;&eth;&agrave;&acirc;&euml;&aring;&iacute;&egrave;&yuml;">
+		<param name="Local" value="InitialActionsRu.html#EditRibbon">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="&Ntilde;&icirc;&ccedil;&auml;&agrave;&iacute;&egrave;&aring; &egrave; &icirc;&ograve;&ecirc;&eth;&ucirc;&ograve;&egrave;&aring; &eth;&agrave;&aacute;&icirc;&divide;&aring;&atilde;&icirc; &iuml;&eth;&icirc;&ntilde;&ograve;&eth;&agrave;&iacute;&ntilde;&ograve;&acirc;&agrave;">
+		<param name="Local" value="InitialActionsRu.html#New_OpenWS">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="&Icirc;&iuml;&eth;&aring;&auml;&aring;&euml;&aring;&iacute;&egrave;&aring; &ograve;&egrave;&iuml;&icirc;&acirc; &ocirc;&agrave;&eacute;&euml;&icirc;&acirc; &egrave; &icirc;&iuml;&aring;&eth;&agrave;&ouml;&egrave;&eacute; &iacute;&agrave;&auml; &iacute;&egrave;&igrave;&egrave;">
+		<param name="Local" value="FileTypeDefRu.html">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="&Ntilde;&icirc;&ccedil;&auml;&agrave;&iacute;&egrave;&aring; &egrave; &eth;&aring;&auml;&agrave;&ecirc;&ograve;&egrave;&eth;&icirc;&acirc;&agrave;&iacute;&egrave;&aring; wsm-&iuml;&aring;&eth;&aring;&igrave;&aring;&iacute;&iacute;&ucirc;&otilde;">
+		<param name="Local" value="CreateAndEditWSM_VarsRu.html">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="&Auml;&icirc;&aacute;&agrave;&acirc;&euml;&aring;&iacute;&egrave;&aring; &egrave; &oacute;&auml;&agrave;&euml;&aring;&iacute;&egrave;&aring; &ocirc;&agrave;&eacute;&euml;&icirc;&acirc;">
+		<param name="Local" value="AddAndRemoveFilesRu.html">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="&Ntilde;&ograve;&eth;&oacute;&ecirc;&ograve;&oacute;&eth;&egrave;&ccedil;&agrave;&ouml;&egrave;&yuml;  &ocirc;&agrave;&eacute;&euml;&icirc;&acirc; ">
+		<param name="Local" value="WorkSpaceStructureRu.html#FilesStructuring">
+		</OBJECT>
+	<UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="&Auml;&icirc;&aacute;&agrave;&acirc;&euml;&aring;&iacute;&egrave;&aring; &atilde;&eth;&oacute;&iuml;&iuml; &egrave; &iuml;&agrave;&iuml;&icirc;&ecirc;">
+			<param name="Local" value="WorkSpaceStructureRu.html#AddNode">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="&Oacute;&auml;&agrave;&euml;&aring;&iacute;&egrave;&aring; &atilde;&eth;&oacute;&iuml;&iuml; &egrave; &iuml;&agrave;&iuml;&icirc;&ecirc;">
+			<param name="Local" value="WorkSpaceStructureRu.html#RemoveNode">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="&Iuml;&aring;&eth;&aring;&egrave;&igrave;&aring;&iacute;&icirc;&acirc;&agrave;&iacute;&egrave;&aring; &atilde;&eth;&oacute;&iuml;&iuml; &egrave; &iuml;&agrave;&iuml;&icirc;&ecirc;">
+			<param name="Local" value="WorkSpaceStructureRu.html#RenameNode">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="&Iuml;&aring;&eth;&aring;&igrave;&aring;&ugrave;&aring;&iacute;&egrave;&aring; &atilde;&eth;&oacute;&iuml;&iuml; &egrave; &iuml;&agrave;&iuml;&icirc;&ecirc;">
+			<param name="Local" value="WorkSpaceStructureRu.html#ManipulateGroupsAndFolders">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="&Iuml;&aring;&eth;&aring;&igrave;&aring;&ugrave;&aring;&iacute;&egrave;&aring; &ocirc;&agrave;&eacute;&euml;&icirc;&acirc;">
+			<param name="Local" value="WorkSpaceStructureRu.html#MoveFile">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="&Iuml;&aring;&eth;&aring;&igrave;&aring;&ugrave;&aring;&iacute;&egrave;&aring; &ocirc;&agrave;&eacute;&euml;&icirc;&acirc; &igrave;&aring;&aelig;&auml;&oacute; &atilde;&eth;&oacute;&iuml;&iuml;&agrave;&igrave;&egrave;">
+			<param name="Local" value="WorkSpaceStructureRu.html">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="&Oacute;&iuml;&eth;&agrave;&acirc;&euml;&aring;&iacute;&egrave;&aring; &ouml;&acirc;&aring;&ograve;&icirc;&igrave; &ntilde;&ograve;&eth;&icirc;&ecirc;">
+			<param name="Local" value="WorkSpaceStructureRu.html#LineColor">
+			</OBJECT>
+	</UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="&Icirc;&aacute;&eth;&agrave;&aacute;&icirc;&ograve;&ecirc;&agrave; &ocirc;&agrave;&eacute;&euml;&icirc;&acirc;">
+		<param name="Local" value="FileActionsRu.html">
+		</OBJECT>
+</UL>
+</BODY></HTML>

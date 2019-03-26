@@ -1,6 +1,7 @@
 ﻿#include @"ws_manager\common\AppFrontEnd\WS_FrontEnd\WS_FrontEnd.ph"
 
 % privately used packages
+#include @"WS_manager\Common\AppFrontEnd\wsFE_Images\wsFE_Images.ph"
 #include @"pfc\log\Log.ph"
 #include @"pfc\vpi\vpi.ph"
 #include @"ws_manager\common\AppFrontEnd\WSFE_Connector\WSFE_Connector.ph"

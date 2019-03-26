@@ -2,44 +2,30 @@
 
 implement performSourceCommand
     inherits wsFE_Connector
-    open core, stdio, vpiDomains,treeControl{treeNode_std}, ribbonControl, wSFE_Command, ws_eventManager
+    open core, treeControl{treeNode_std}, ribbonControl, wSFE_Command, ws_eventManager
 
 facts
-    runCmd : command:=erroneous.
-    reRunCmd : command:=erroneous.
-    runSelectCmd : menucommand:=erroneous.
-
-    runAllCmd : command:=erroneous.
-    reRunAllCmd : command:=erroneous.
-    runSelectAllCmd : menucommand:=erroneous.
+    invokeCmd_F : (integer Index,command InvokeCmd,command InvokeAllCmd,menuCommand CommandMenu).
 
     stopRunCmd : command:=erroneous.
     pauseRunCmd : command:=erroneous.
-    execRunCmd : command:=erroneous.
     resetRunCmd : command:=erroneous.
     selResetRunCmd : command:=erroneous.
     resetMenuCmd : menuCommand:=erroneous.
 
     isPauseRun : boolean := false.
 
-    execCmdOn : (string ExtName, string* ExtList, boolean Enabled).
-
 clauses
     new(FrontEnd):-
         wsFE_Connector::new(FrontEnd),
         wsFE_SourceTree():treeControl_P:addSelectEndListener(onTreeNodeSelected),
+        wsFE_SourceTree():treeControl_P:addGetFocusListener(onTreeGetFocus),
         wsFE_SourceList():sourceList_P:addSelectEndListener(onListRowSelected).
 
 clauses
     addChangeListener():-
         ws_Events():changeLanguageEvent:addListener(
             {:-
-            runCmd:menuLabel:=ws_Events():getString(cmdRun_C),
-            runCmd:ribbonLabel := ws_Events():getString(cmdRun_C),
-            runCmd:tipTitle:=tooltip::tip(ws_Events():getString(tipRun_C)),
-            reRunCmd:menuLabel:=ws_Events():getString(cmdReRun_C),
-            reRunCmd:ribbonLabel := ws_Events():getString(cmdReRun_C),
-            reRunCmd:tipTitle:=tooltip::tip(ws_Events():getString(tipReRun_C)),
             resetRunCmd:menuLabel:=ws_Events():getString(cmdResetAll_C),
             resetRunCmd:ribbonLabel := ws_Events():getString(cmdResetAll_C),
             resetRunCmd:tipTitle:=toolTip::tip(ws_Events():getString(tipResetAll_C)),
@@ -51,16 +37,7 @@ clauses
             stopRunCmd:tipTitle:=toolTip::tip(ws_Events():getString(tipStop_C)),
             pauseRunCmd:menuLabel:=ws_Events():getString(cmdPause_C),
             pauseRunCmd:ribbonLabel := ws_Events():getString(cmdPause_C),
-            pauseRunCmd:tipTitle:=toolTip::tip(ws_Events():getString(tipPause_C)),
-            execRunCmd:menuLabel:=ws_Events():getString(cmdExec_C),
-            execRunCmd:ribbonLabel := ws_Events():getString(cmdExec_C),
-            execRunCmd:tipTitle:=toolTip::tip(ws_Events():getString(tipExec_C)),
-            runAllCmd:menuLabel:=ws_Events():getString(cmdRunAll_C),
-            runAllCmd:ribbonLabel := ws_Events():getString(cmdRunAll_C),
-            runAllCmd:tipTitle:=tooltip::tip(ws_Events():getString(tipRunAll_C)),
-            reRunAllCmd:menuLabel:=ws_Events():getString(cmdReRunAll_C),
-            reRunAllCmd:ribbonLabel := ws_Events():getString(cmdReRunAll_C),
-            reRunAllCmd:tipTitle:=tooltip::tip(ws_Events():getString(tipReRunAll_C))
+            pauseRunCmd:tipTitle:=toolTip::tip(ws_Events():getString(tipPause_C))
             }).
 
 clauses
@@ -78,41 +55,50 @@ clauses
         resetMenuCmd:enabled := true.
 
     initWS_PerformPauseRun_Menu(WS_Form)= block([ [cmd(pauseRunCmd:id,imageAndText(vertical))],
-                                                                                    [cmd(stopRunCmd:id,imageAndText(vertical))],
-                                                                                    [cmd(execRunCmd:id,imageAndText(vertical))] ]):-
+                                                                                    [cmd(stopRunCmd:id,imageAndText(vertical))]
+                                                                                    ]):-
         _PauseRunSourceBlock=initCommandBlock("pauseRun",WS_Form,pauseRun),
-        _StopRunSourceBlock=initCommandBlock("stopRun",WS_Form,stopRun),
-        _ExecRunSourceBlock=initCommandBlock("execRun",WS_Form,execRun).
-
-    initWS_PerformSource_Menu(WS_Form)=RunBlockMenu:-
-        _ReRunSourceBlock=initCommandBlock("reRunSource",WS_Form,{:-performRun(runCmd,true)}),
-        _RunSourceBlock=initCommandBlock("runSource",WS_Form,{:-performRun(runCmd,false)}),
-        RunBlockMenu=initCommandBlock("runMenu",WS_Form,dummyRun).
-
-    initWS_PerformAllSource_Menu(WS_Form)=RunAllBlockMenu:-
-        _ReRunAllSourceBlock=initCommandBlock("reRunAllSource",WS_Form,{:-performRun(runAllCmd,true)}),
-        _RunAllSourceBlock=initCommandBlock("runAllSource",WS_Form,{:-performRun(runAllCmd,false)}),
-        RunAllBlockMenu=initCommandBlock("runAllMenu",WS_Form,dummyRun).
+        _StopRunSourceBlock=initCommandBlock("stopRun",WS_Form,stopRun).
 
 clauses
-    initCommandBlock("runSource",Win,Predicate)=block([  [cmd(runCmd:id, textOnly)]  ]):-
+    initWS_PerformCommand_Menu(WS_Form) =
+        [block([[cmd(CommandMenu:id, imageAndText(vertical))]]) ||
+            retractAll(invokeCmd_F(_, _, _, _)),
+            Index = std::cIterate(commandMax)+1,
+                CmdID = string::format("cmd_%", Index),
+                Text = string::format("Command #%d", Index),
+                InvokeCmd = command::new(WS_Form, CmdID),
+                InvokeCmd:icon:=some(icon::createFromImages([bitmap::createFromBinary(runIcon16_C),bitmap::createFromBinary(runIcon32_C)])),
+                initInvokeCmd(InvokeCmd, Text, {:- invokeCommand(Index, false)}),
+                AllCmdID = string::format("cmdAll_%", Index),
+                TextAll = string::format("Run All\n command"),
+                InvokeAllCmd = command::new(WS_Form, AllCmdID),
+                InvokeAllCmd:icon:=some(icon::createFromImages([bitmap::createFromBinary(runAllIcon16_C),bitmap::createFromBinary(runAllIcon32_C)])),
+                initInvokeCmd(InvokeAllCmd, TextAll, {:- invokeCommand(Index, true)}),
+                CommandID = string::format("command_%", Index),
+                CommandMenu = menuCommand::new(WS_Form, CommandID),
+                CommandMenu:style :=menuCommand::toolMenu,
+                CommandMenu:icon:=core::none,
+                CommandMenu:layout:=menuCommand::menuStatic(
+                    [
+                    menuCommand::cmd(InvokeCmd),
+                    menuCommand::cmd(InvokeAllCmd)
+                    ]),
+                CommandMenu:enabled := true,
+                assert(invokeCmd_F(Index, InvokeCmd, InvokeAllCmd, CommandMenu))
+        ].
+
+class predicates
+    initInvokeCmd : (command Command, string Text, predicate{command} Predicate).clauses
+    initInvokeCmd(InvokeCmd, Text, Predicate):-
         !,
-        runCmd := command::new(Win,"run"),
-        runCmd:menuLabel:=ws_Events():getString(cmdRun_C),
-        runCmd:ribbonLabel := ws_Events():getString(cmdRun_C),
-        runCmd:tipTitle:=tooltip::tip(ws_Events():getString(tipRun_C)),
-        runCmd:icon:=some(icon::createFromImages([bitmap::createFromBinary(runIcon16_C),bitmap::createFromBinary(runIcon32_C)])),
-        runCmd:run:=Predicate,
-        runCmd:enabled := false.
-    initCommandBlock("reRunSource",Win,Predicate)=block([  [cmd(reRunCmd:id, textOnly)]  ]):-
-        !,
-        reRunCmd := command::new(Win,"reRun"),
-        reRunCmd:menuLabel:=ws_Events():getString(cmdReRun_C),
-        reRunCmd:ribbonLabel := ws_Events():getString(cmdReRun_C),
-        reRunCmd:tipTitle:=tooltip::tip(ws_Events():getString(tipReRun_C)),
-        reRunCmd:icon:=some(icon::createFromImages([bitmap::createFromBinary(reRunIcon16_C),bitmap::createFromBinary(reRunIcon32_C)])),
-        reRunCmd:run:=Predicate,
-        reRunCmd:enabled := false.
+        InvokeCmd:menuLabel := Text,
+        InvokeCmd:ribbonLabel := Text,
+        InvokeCmd:tipTitle := tooltip::tip(Text),
+        InvokeCmd:run:=Predicate,
+        InvokeCmd:enabled := false.
+
+clauses
     initCommandBlock("resetRun",Win,Predicate)=block([  [cmd(resetRunCmd:id,imageAndText(vertical))]  ]):-
         !,
         resetRunCmd := command::new(Win, "Reset"),
@@ -149,61 +135,6 @@ clauses
         pauseRunCmd:icon := some(icon::createFromImages([bitmap::createFromBinary(pauseIcon16_C),bitmap::createFromBinary(pauseIcon32_C)])),
         pauseRunCmd:run :=Predicate,
         pauseRunCmd:enabled := false.
-    initCommandBlock("execRun",Win,Predicate)=block([  [cmd(execRunCmd:id,imageAndText(vertical))]  ]):-
-        !,
-        execRunCmd := command::new(Win, "Exec"),
-        execRunCmd:menuLabel:=ws_Events():getString(cmdExec_C),
-        execRunCmd:ribbonLabel := ws_Events():getString(cmdExec_C),
-        execRunCmd:tipTitle:=toolTip::tip(ws_Events():getString(tipExec_C)),
-        execRunCmd:icon := some(icon::createFromImages([bitmap::createFromBinary(execIcon16_C),bitmap::createFromBinary(execIcon32_C)])),
-        execRunCmd:run :=Predicate,
-        execRunCmd:enabled := false.
-    initCommandBlock("runMenu",Win,_Predicate)=block([  [cmd(runSelectCmd:id, imageAndText(vertical))]]):-
-        !,
-        runSelectCmd:=menuCommand::new(Win,"run/reRun"),
-%        runSelectCmd:menuLabel:="Run",
-%        runSelectCmd:tipTitle:=toolTip::tip("Run"),
-%        runSelectCmd:tipBody:=toolTip::tip("Win kind of menu button toggles tools in and out. Whenever a new tool is selected, it becomes the default tool shown on menu button."),
-        runSelectCmd:style :=menuCommand::toolMenu,
-        runSelectCmd:icon:=core::none,
-        runSelectCmd:layout:=menuCommand::menuStatic(
-            [
-            menuCommand::cmd(runCmd),
-            menuCommand::cmd(reRunCmd)
-            ]),
-        runSelectCmd:enabled := false.
-    initCommandBlock("runAllSource",Win,Predicate)=block([  [cmd(runAllCmd:id, imageAndText(vertical))]  ]):-
-        !,
-        runAllCmd:=command::new(Win,"run all"),
-        runAllCmd:menuLabel:=ws_Events():getString(cmdRunAll_C),
-        runAllCmd:ribbonLabel := ws_Events():getString(cmdRunAll_C),
-        runAllCmd:tipTitle:=tooltip::tip(ws_Events():getString(tipRunAll_C)),
-        runAllCmd:icon:=some(icon::createFromImages([bitmap::createFromBinary(runAllIcon16_C),bitmap::createFromBinary(runAllIcon32_C)])),
-        runAllCmd:run:=Predicate,
-        runAllCmd:enabled := false.
-    initCommandBlock("reRunAllSource",Win,Predicate)=block([  [cmd(reRunAllCmd:id, imageAndText(vertical))]  ]):-
-        !,
-        reRunAllCmd :=command::new(Win,"reRun all"),
-        reRunAllCmd:menuLabel:=ws_Events():getString(cmdReRunAll_C),
-        reRunAllCmd:ribbonLabel := ws_Events():getString(cmdReRunAll_C),
-        reRunAllCmd:tipTitle:=tooltip::tip(ws_Events():getString(tipReRunAll_C)),
-        reRunAllCmd:icon:=some(icon::createFromImages([bitmap::createFromBinary(reRunAllIcon16_C),bitmap::createFromBinary(reRunAllIcon32_C)])),
-        reRunAllCmd:run:=Predicate,
-        reRunAllCmd:enabled := false.
-    initCommandBlock("runAllMenu",Win,_Predicate)=block([  [cmd(runSelectAllCmd:id, imageAndText(vertical))]  ]):-
-        !,
-        runSelectAllCmd:=menuCommand::new(Win,"run/reRunAll"),
-%        runSelectAllCmd:menuLabel:="Run All",
-%        runSelectAllCmd:tipTitle:=toolTip::tip("Run All"),
-%        runSelectAllCmd:tipBody:=toolTip::tip("Win kind of menu button toggles tools in and out. Whenever a new tool is selected, it becomes the default tool shown on menu button."),
-        runSelectAllCmd:style :=menuCommand::toolMenu,
-        runSelectAllCmd:icon:=core::none,
-        runSelectAllCmd:layout:=menuCommand::menuStatic(
-            [
-            menuCommand::cmd(runAllCmd),
-            menuCommand::cmd(reRunAllCmd)
-            ]),
-        runSelectAllCmd:enabled := false.
 
     initCommandBlock(_Any,_Win,_Predicate)=_:-
         exception::raise_User("Unexpected Alternative!").
@@ -227,47 +158,50 @@ clauses
         Selected = toBoolean( [] <> wSFE_SourceList():sourceList_P:getSel() ),
         ExistsItems = toBoolean( 0 < wSFE_SourceList():sourceList_P:getItemCount() ),
         if Selected=true, wsFE_Tasks():sourceIsRunning_P=true then
-            runCmd:enabled := false,
-            runAllCmd:enabled := false,
-            reRunCmd:enabled := false,
-            reRunAllCmd:enabled := false,
-            runSelectCmd:enabled := false,
-            runSelectAllCmd:enabled := false,
-            execRunCmd:enabled := false
+            foreach invokeCmd_F(_Index, InvokeCmd, InvokeAllCmd, MenuCommand) do
+                InvokeCmd:enabled := false,
+                InvokeAllCmd:enabled := false,
+                MenuCommand:enabled := false
+            end foreach
         elseif wsFE_Tasks():sourceIsRunning_P=false then
-            runCmd:enabled := Selected,
-            runAllCmd:enabled := ExistsItems,
-            reRunCmd:enabled := Selected,
-            reRunAllCmd:enabled := ExistsItems,
-            runSelectCmd:enabled := Selected,
-            runSelectAllCmd:enabled := ExistsItems,
-            if
-                FileName = wSFE_SourceList():tryGetSelectSourceFileName(),
-                Ext = filename::getExtension(FileName),
-                execCmdOn(_ExtName,  ExtList, Enabled),
-                string::toLowerCase(Ext) in ExtList
-            then
-                execRunCmd:enabled := Enabled
-            else
-                execRunCmd:enabled := false
-            end if
+            foreach invokeCmd_F(_Index, InvokeCmd, InvokeAllCmd, _MenuCommand) do
+                InvokeCmd:enabled := Selected,
+                InvokeAllCmd:enabled := ExistsItems
+            end foreach
         end if.
 
-domains
-    enabledList = tuple{string, string, string}*.
 clauses
-    setEnabledExecuteCmd(Value):-
-        EnabledList = toTerm(enabledList, Value),
-        foreach tuple(ExtName, ExtListStr, EnabledStr) in EnabledList do
-            retractAll(execCmdOn(ExtName, _, _)),
-            assert(execCmdOn(ExtName,  string::split_delimiter(ExtListStr, ","), toBoolean("true" = EnabledStr)))
-        end foreach,
+    setEnabledExecuteCmd(_Value):-
         setMenuAblity().
 
-predicates
-    dummyRun : (command).
 clauses
-    dummyRun(_).
+    updateCommandRibbon(Index, CmdName, Enabled):-
+        if invokeCmd_F(Index, InvokeCmd, InvokeAllCmd, MenuCommand) then
+            InvokeCmd:menuLabel := CmdName,
+            InvokeCmd:ribbonLabel := CmdName,
+            InvokeCmd:tipTitle := tooltip::tip(CmdName),
+            InvokeAllCmd:menuLabel := string::concat(CmdName, " All"),
+            InvokeAllCmd:ribbonLabel := string::concat(CmdName, " All"),
+            InvokeAllCmd:tipTitle := tooltip::tip(string::concat(CmdName, " All")),
+            MenuCommand:enabled := Enabled
+        end if.
+
+predicates
+    onTreeGetFocus : window::getFocusListener.
+clauses
+    onTreeGetFocus(_):-
+        foreach invokeCmd_F(Index, InvokeCmd, InvokeAllCmd, MenuCommand) do
+            CmdText = string::format("%s #%d", ws_Events():getString(stCommand), Index),
+            InvokeCmd:menuLabel := CmdText,
+            InvokeCmd:ribbonLabel := CmdText,
+            InvokeCmd:tipTitle := tooltip::tip(CmdText),
+            InvokeAllCmd:menuLabel := string::concat(CmdText, " All"),
+            InvokeAllCmd:ribbonLabel := string::concat(CmdText, " All"),
+            InvokeAllCmd:tipTitle := tooltip::tip(string::concat(CmdText, " All")),
+            MenuCommand:enabled := true
+        end foreach,
+        wsFE_Form():prevSelectExt := "",
+        wsFE_Form():ribbonControl_P:invalidate().
 
 clauses
     restoreResetState(IsSelect):-
@@ -278,24 +212,20 @@ clauses
         end if.
 
 predicates
-    performRun:(command CommandId, boolean TrueIfReRun).
+    invokeCommand : (integer Index, boolean TrueIfAll).
 clauses
-    performRun(Command,TrueIfReRun):-
+    invokeCommand(Index, TrueIfAll):-
         stopRunCmd:enabled := true,
         wsFE_Tasks():sourceIsRunning_P := true,
-        if Command=runCmd then
-            runSelectCmd:activeTool := some(Command),
-            runSelectCmd:enabled := false,
-            if [_,_|_] = wSFE_SourceList():sourceList_P:getSel() then
-                pauseRunCmd:enabled := true
-            end if,
-            wSFE_SourceList():run(false,TrueIfReRun)
-        else % Command=runAllCmd
-            runSelectAllCmd:activeTool := some(Command),
-            runSelectAllCmd:enabled := false,
-            pauseRunCmd:enabled := true,
-            wSFE_SourceList():run(true,TrueIfReRun)
+        if false = TrueIfAll then
+            ItemsIDToRun = wSFE_SourceList():sourceList_P:getSel()
+        else
+            ItemsIDToRun = wSFE_SourceList():sourceList_P:getAll()
         end if,
+        if [_,_|_] = ItemsIDToRun then
+            pauseRunCmd:enabled := true
+        end if,
+        wsFE_Tasks():invoke(Index, TrueIfAll, [toString(ItemID)||ItemID=list::getMember_nd(ItemsIDToRun)]),
         if false = isPauseRun then
             disabledRibbonPauseBlock(),
             stopRunCmd:enabled := false,
@@ -304,8 +234,11 @@ clauses
 
 clauses
     disabledRibbonPauseBlock():-
-        runSelectCmd:enabled := true,
-        runSelectAllCmd:enabled := true,
+        foreach invokeCmd_F(_Index, InvokeCmd, InvokeAllCmd, MenuCommand) do
+            InvokeCmd:enabled := true,
+            InvokeAllCmd:enabled := true,
+            MenuCommand:enabled := true
+        end foreach,
         pauseRunCmd:enabled := false.
 
 predicates
@@ -326,12 +259,6 @@ clauses
         disabledRibbonPauseBlock(),
         stopRunCmd:enabled := false,
         wsFE_Tasks():sourceIsRunning_P := false.
-
-predicates
-    execRun : (command).
-clauses
-    execRun(_):-
-        wSFE_SourceList():execRun().
 
 predicates
     resetAll : (command).

@@ -2,7 +2,7 @@
 <lng>
   <lng dk="Dansk" eng="English" rus="Русский" />
   <row1 comment="Status">
-    <eng>NoPath</eng>
+    <eng>No File</eng>
   </row1>
   <row2 comment="Status">
     <eng>Stopped</eng>
@@ -58,7 +58,7 @@
     <rus>Выполняется</rus>
   </row16>
   <row17 comment="Log message">
-    <eng>User refused to define VirtualName</eng>
+    <eng>User refused to define WSM-variable</eng>
   </row17>
   <row18 comment="Menu label of Ribbon button">
     <eng>Delete Node</eng>
@@ -304,8 +304,8 @@
     <rus>Редактирование структуры</rus>
   </row75>
   <row76 comment="Label of Ribbon section">
-    <eng>File Editing</eng>
-    <rus>Редактирование состава</rus>
+    <eng>Add File(s)</eng>
+    <rus>Добавить файл(ы)</rus>
   </row76>
   <row77 comment="Label of Ribbon section">
     <eng>File Actions</eng>
@@ -419,19 +419,19 @@
     <eng>Explore...</eng>
     <rus>Проводник...</rus>
   </row101>
-  <row102 comment="D&amp;D Popup menu item of Source's ListView Control">
+  <row102 comment="Popup menu item of Source's ListView Control">
     <eng>Move Above Selected File</eng>
     <rus>Переместить выше выбранного файла</rus>
   </row102>
-  <row103 comment="D&amp;D Popup menu item of Source's ListView Control">
+  <row103 comment="Popup menu item of Source's ListView Control">
     <eng>Move Below Selected File</eng>
     <rus>Переместить ниже выбранного файла</rus>
   </row103>
-  <row104 comment="D&amp;D Popup menu item of Source's ListView Control">
+  <row104 comment="Popup menu item of Source's ListView Control">
     <eng>Move to Group as Topmost</eng>
     <rus>Переместить в начало группы</rus>
   </row104>
-  <row105 comment="D&amp;D Popup menu item of Source's ListView Control">
+  <row105 comment="Popup menu item of Source's ListView Control">
     <eng>Move to Group as Last</eng>
     <rus>Переместить в конец группы</rus>
   </row105>
@@ -534,10 +534,10 @@ See - there is the node with the name "%" already</eng>
   </row129>
   <row130 comment="Groupbox title template text of Options Dialog">
     <eng> Result % Command Line </eng>
-    <rus>Результирующая строка команды %</rus>
+    <rus> Результирующая строка команды % </rus>
   </row130>
   <row131 comment="Dialog button text">
-    <eng>Browse...</eng>
+    <eng>&amp;Browse...</eng>
     <rus>&amp;Файл...</rus>
   </row131>
   <row132 comment="Template of Format Command (Open)">
@@ -604,22 +604,22 @@ See - there is the node with the name "%" already</eng>
     <rus>&amp;Править</rus>
   </row148>
   <row149 comment="VirtDir Dialog title (New)">
-    <eng>Create Virtual Directory</eng>
-    <rus>Создать Виртуальную директорию</rus>
+    <eng>Create WSM-variable</eng>
+    <rus>Создать wsm-переменную</rus>
   </row149>
   <row150 comment="VirtDir Dialog title (Edit)">
-    <eng>Edit Virtual Directory</eng>
-    <rus>Редактировать виртуальную директорию</rus>
+    <eng>Edit WSM-variable</eng>
+    <rus>Редактировать wsm-переменную</rus>
   </row150>
   <row151 comment="Static text of VirtDir Dialog">
     <eng>Name:</eng>
     <rus>Имя:</rus>
   </row151>
-  <row152 comment="Static text of VirtDir Dialog">
+  <row152 comment="Static text of WSM-Var Dialog">
     <eng>Directory:</eng>
     <rus>Директория:</rus>
   </row152>
-  <row153 comment="Warning text of VirtDir Dialog">
+  <row153 comment="Warning text of WSM-Var Dialog">
     <eng>This Name exists!</eng>
     <rus>Такое имя существует!</rus>
   </row153>
@@ -679,8 +679,89 @@ See - there is the node with the name "%" already</eng>
     <eng>File Type</eng>
     <rus>Тип Файла</rus>
   </row170>
-  <row171 comment="Title VirtDir Tab of Settings dialog">
-    <eng>Virtual Directory</eng>
-    <rus>Виртуал.директория</rus>
+  <row171 comment="Title WSM-vars Tab of Settings dialog">
+    <eng>WSM-Variables</eng>
+    <rus>WSM-Переменные</rus>
   </row171>
+  <row172 comment="Static Text of Command Tab">
+    <eng>Application</eng>
+    <rus>Приложение</rus>
+  </row172>
+  <row173 comment="Checkbox text of Command Tab">
+    <eng>Invoke with Windows Association</eng>
+    <rus>Использовать Windows ассоциацию</rus>
+  </row173>
+  <row174 comment="Checkbox text of Command Tab">
+    <eng>Default Command (Mouse Double Click)</eng>
+    <rus>Команда по умолчанию (двойной щелчок мыши)</rus>
+  </row174>
+  <row175 comment="CheckBox Text of Run Command Tab">
+    <eng>Output Stream Mode On:</eng>
+    <rus>Использовать выход.поток:</rus>
+  </row175>
+  <row176 comment="Checkbox text of Command Tab">
+    <eng>Participates in All</eng>
+    <rus>Участвует во всех</rus>
+  </row176>
+  <row177 comment="Warning message">
+    <eng>Run for "%s" impossible
+</eng>
+  </row177>
+  <row178 comment="Menu item text of VirtDir Dialog">
+    <eng>Clear</eng>
+    <rus>Очистить</rus>
+  </row178>
+  <row179 comment="Question">
+    <eng>Are you sure you want to delete WS variable '%s'?</eng>
+    <rus>Вы хотите удалить WS переменную '%s'?</rus>
+  </row179>
+  <row180 comment="Error message">
+    <eng>The WS variable &lt;%s&gt; is undefined!</eng>
+    <rus>WS переменная &lt;%s&gt; неопределена!</rus>
+  </row180>
+  <row181 comment="Dialog Title">
+    <eng>Warning</eng>
+    <rus>Предупреждение</rus>
+  </row181>
+  <row182 comment="Dialog title">
+    <eng>Workspace Settings</eng>
+    <rus>Настройки приложения</rus>
+  </row182>
+  <row183 comment="Dialog button text">
+    <eng>ReOrder</eng>
+    <rus>Передвинуть</rus>
+  </row183>
+  <row184 comment="Dialog title">
+    <eng>Help</eng>
+    <rus>Help</rus>
+  </row184>
+  <row185 comment="Tooltip of Ribbon button">
+    <eng>Help WorkSpaceManager</eng>
+    <rus>Справка о WorkSpaceManager</rus>
+  </row185>
+  <row186 comment="Filename of Help">
+    <eng>wsm_HelpRu.chm</eng>
+    <rus>wsm_HelpRu.chm</rus>
+  </row186>
+  <row187 comment="Static text">
+    <eng>     Op</eng>
+    <rus>     Оп</rus>
+  </row187>
+  <row188 comment="Checkbox text of Command tab">
+    <eng>Check Status</eng>
+    <rus>Проверка статуса</rus>
+  </row188>
+  <row189 comment="Static text">
+    <eng>Name:</eng>
+    <rus>Имя:</rus>
+  </row189>
+  <row190 comment="Question Text">
+    <eng>Are you sure you want to delete source(s)</eng>
+  </row190>
+  <row191 comment="Label of Ribbon section">
+    <eng>Options</eng>
+  </row191>
+  <row192 comment="Popup menu item of Group Tree Control">
+    <eng>Check Files</eng>
+  </row192>
 </lng>

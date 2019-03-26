@@ -5,18 +5,18 @@ interface wSFE_SourceList
 
 properties
     sourceList_P:listViewControl.
-    vip_P : integer.
-    vip_bw_P : integer.
-    txt_P : integer.
-    txt_light_P : integer.
-    pzl_bk_P : integer.
-    pzl_wt_P : integer.
+%    vip_P : integer.
+%    vip_bw_P : integer.
+%    txt_P : integer.
+%    txt_light_P : integer.
+%    pzl_bk_P : integer.
+%    pzl_wt_P : integer.
 
 predicates
     addSource:(namedValue* Parameters).
 
 predicates
-    setAllInQueue:(string* NodeIdList) -> string* QueueNodeIdList.
+    setAllInQueue:(string* NodeIdList,integer Index,boolean TrueIsAll) -> string* QueueNodeIdList.
 
 predicates
     getAllInQueue:() -> string* QueueNodeIdList.

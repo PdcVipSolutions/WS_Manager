@@ -1,13 +1,14 @@
 ﻿#include @"WorkSpaceManager\WorkSpaceManager.ph"
 
 % privately used packages
+#include @"WS_manager\Common\AppBackEnd\WS_BackEnd\WS_BackEnd.ph"
+#include @"WS_manager\Common\AppBackEnd\WSBE_Tasks\WSBE_Tasks.ph"
+#include @"WS_manager\Common\WS_EventManager\WS_EventManager.ph"
 #include @"pfc\log\Log.ph"
 #include @"Packs\Logic\trace\trace.ph"
 #include @"pfc\multiThread\monitorQueue\monitorQueue.ph"
 #include @"pfc\multiThread\multiThread.ph"
 #include @"pfc\windowsApi\httpServer_api\httpServer_api.ph"
-%#include @"ws_manager\common\http_Client\http_Client.ph"
-#include @"ws_manager\common\AppBackEnd\WS_BackEnd\WS_BackEnd.ph"
 #include @"pfc\collection\collection.ph"
 #include @"pfc\core.ph"
 #include @"pfc\exception\exception.ph"

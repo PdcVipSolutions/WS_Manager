@@ -717,21 +717,21 @@ clauses
         do
             if
                 Node = xml_Options:getNode_nd([root(), child(frontEndOptions_C, {(_)}), child(groupNode_C, { (O) :- O:attribute(title_C) in [wsFE_Tasks_C,wsFE_Form_C] }), child(Name, {(_)})])
-            then
-                Node:modifyAttribute(path_C, Value)
+                then
+                    Node:modifyAttribute(path_C, Value)
             elseif
                 Name in [nodeIDList_C,ribbonLayout_C,checkedFilter_C],
                 FormNode = xml_Options:getNode_nd([root(), child(frontEndOptions_C, {(_)}), child(groupNode_C, { (O) :- O:attribute(title_C) = wsFE_Form_C })])
-            then
-                ChItem = xmlElement::new("", Name,FormNode),
-                ChItem:addAttribute(path_C, Value),
-                FormNode:addNode(ChItem)
+                then
+                    ChItem = xmlElement::new("", Name,FormNode),
+                    ChItem:addAttribute(path_C, Value),
+                    FormNode:addNode(ChItem)
             elseif
                 TaskNode = xml_Options:getNode_nd([root(), child(frontEndOptions_C, {(_)}), child(groupNode_C, { (O) :- O:attribute(title_C) = wsFE_Tasks_C })])
-            then
-                ChItem = xmlElement::new("", Name,TaskNode),
-                ChItem:addAttribute(path_C, Value),
-                TaskNode:addNode(ChItem)
+                then
+                    ChItem = xmlElement::new("", Name,TaskNode),
+                    ChItem:addAttribute(path_C, Value),
+                    TaskNode:addNode(ChItem)
             end if
         end foreach,
         saveWSMOptions().

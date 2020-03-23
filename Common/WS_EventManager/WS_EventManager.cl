@@ -10,12 +10,16 @@ domains
         methodRequestChain.
 
 constants
+    separatorsExt = ",; ".
+
+constants
     wsFE_HttpClient_C="wsFE_HttpClient".
     wsFE_Form_C="wsFE_Form".
     wsBE_Messages_C="wsBE_Messages".
     wsFE_Tasks_C="wsFE_Tasks".
     wsFE_SourceTree_C="wsFE_SourceTree".
     wSFE_SourceList_C="wSFE_SourceList".
+    wsFE_Images_C="wsFE_Images".
 
 constants
     methodRequest_C="wsmRequest".
@@ -43,6 +47,26 @@ constants
     name_C="name".
     unknownName_C="Unknown".
     selectSourceType_C="select".
+    wsFile_C = "ws_File".
+    synname_C = "synname".
+
+    commandMax = 4.
+    command_C = "command".
+    commandL_C = "commandL".
+    index_C = "index".
+    argument_C = "argument".
+    suffix_C = "suffix".
+    formatCmd_C = "formatCmd".
+    addModeA_C = "addModeA".
+    addModeS_C = "addModeS".
+    winAss_C = "winAss".
+    defCommand_C = "defCmd".
+    checkStatus_C = "checkSts".
+    allPossible_C = "hasAll".
+    inputFile_C = "inputFile".
+    errWords_C = "errWords".
+    warnWords_C = "warnWords".
+    keyWords_C = "keyWords".
 
     sourcePerformer_C = "run".
     argPerformer_C = "argRun".
@@ -51,6 +75,8 @@ constants
     componentName_C = "compRun".
     streamMode_C = "streamMode".
     codePage_C = "codePage".
+    streamModeOn_C = "sModeOn".
+    inputCP_C = "inputCP".
 
     sourceEditor_C = "open".
     argEditor_C = "argOpen".
@@ -63,6 +89,14 @@ constants
     value_C = "value".
     addMode_C = "addMode".
     feMode_C = "feMode".
+
+% Vip Project Error/Warning Words
+    error_C = "error".
+    warning_C = "warning".
+    fatalError_C = "fatal error".
+    registerCompError_C = "registryerror".
+    callFailed_C ="call failed".
+    notBuilt_C =  "project not built".
 
 % WorkSpace TreeControl Node Titles
     label_C="label".
@@ -159,7 +193,7 @@ constants
     txtNewWS = 82.
     txtReadOnly = 83.
     colCmdArgument = 84.
-    colLocalValue = 85.
+    colLocalSuffix = 85.
     colAddMode = 86.
     colResultStr = 87.
     rowOpen = 88.
@@ -246,10 +280,43 @@ constants
     ttlMiscTab = 169.
     ttlSourceTypeTab = 170.
     ttlVirtDirTab = 171.
+    txtApplicationFile = 172.
+    cbInvokeWinAss = 173.
+    txtDefCommandFE = 174.
+    cbStreamMode = 175.
+    cbPossibleAll = 176.
+    runImpossible = 177.
+    txtClear = 178.
+    delVirtualDir = 179.
+    undefinedWSV = 180.
+    ttlWarning = 181.
+    ttlSettings = 182.
+    pbReOrder = 183.
+    cmdHelp_C = 184.
+    tipHelp_C = 185.
+    helpFile = 186.
+    stCommand = 187.
+    cbCheckStatus = 188.
+    txtCommandName = 189.
+    removeSrcDlgText_C = 190.
+    sctOptions = 191.
+    pmnCheckFile = 192.
+    msgFormat = 193.
+    colOpName = 194.
+    stInputStream = 195.
+    gbInputStream = 196.
+    gbOutputStream = 197.
+    ttlClear_pb = 198.
+    delKWGroupDir = 199.
+    ttlGroupName_st = 200.
+    txtFormatAddWord = 201.
+    txtFormatEditWord = 202.
+    txtPromptWord = 203.
+    pbKeywords = 204.
 
-    groupSource_C = "Group Source".
-    folderSource_C = "Folder Source".
-    excludedSource_C = "Excluded Source".
+    groupSource_C = "Group File".
+    folderSource_C = "Folder File".
+    excludedSource_C = "Excluded File".
 
 constants
     appMessage_C=0. % Start/Stop messages
@@ -272,7 +339,7 @@ constants % messageDataIds
     warnings_C:string="warnings".
     status_C:string="status".
     datetime_C:string="datetime".
-    ribbonLayout_C="ribbon".
+    ribbonLayout_C="ribbon1".
     checkedFilter_C="filter".
     ribbonState_C="rbState".
 
@@ -284,7 +351,6 @@ constants % messageDataIds
     runNoPath_C:string="runNoPath".
     runNoRule_C:string="runNoRule".
     transactionID_C="transID".
-
 
 constants % to BE commands
     emptyRequest_C=0.
@@ -309,7 +375,10 @@ constants % to BE commands
     getExtListAddNewSource_C=updateNodeContent_C+1.
     addNewSource_C=getExtListAddNewSource_C+1.
     deleteSourceList_C=addNewSource_C+1.
-    runSourceList_C=deleteSourceList_C+1.
+    invokeSourceList_C=deleteSourceList_C+1.
+    continueInvokeSourceList_C=invokeSourceList_C+1.
+    checkSourceList_C=continueInvokeSourceList_C+1.
+    runSourceList_C=checkSourceList_C+1.
     stopRun_C=runSourceList_C+1.
     pauseRun_C=stopRun_C+1.
     handleSourceRun_C=pauseRun_C+1.
@@ -332,7 +401,8 @@ constants % to BE commands
     insertVirtualDir_C=setupVirtualDir_C+1.
     updateVirtualDir_C=insertVirtualDir_C+1.
     deleteVirtualDir_C=updateVirtualDir_C+1.
-    updateSourceColors_C=deleteVirtualDir_C+1.
+    setWSVariableFile_C=deleteVirtualDir_C+1.
+    updateSourceColors_C=setWSVariableFile_C+1.
     updateSelectSourceType_C=updateSourceColors_C+1.
     updateUILanguage_C=updateSelectSourceType_C+1.
     wsBE_WSUndefinedMacronames_C=updateUILanguage_C+1.
@@ -347,9 +417,10 @@ constants % Messages from FrontEnd
     addSource_C=insertGroupAfter_C+1.
     addSourcesFromFolder_C=addSource_C+1.
     defineMacroSymbol_C=addSourcesFromFolder_C+1.
+    frontEndVipVirtualDir_C=defineMacroSymbol_C+1.
 
 constants % Menu Commands
-    removeSource_C=defineMacroSymbol_C+1.
+    removeSource_C=frontEndVipVirtualDir_C+1.
     removeFolder_C=removeSource_C+1.
     moveSourceUp_C=removeFolder_C+1.
     moveSourceDown_C=moveSourceUp_C+1.
@@ -405,5 +476,8 @@ constants % from BE messages
     weBE_ExecSource_C=weBE_OpenSource_C+1. %33
     weBE_RunSource_C=weBE_ExecSource_C+1. %34
     weBE_StopRunSource_C=weBE_RunSource_C+1. %35
+    weBE_GetVipVirtualDir_C=weBE_StopRunSource_C+1. %36
+    wsBE_UpdateWSV_C=weBE_GetVipVirtualDir_C+1. %37
+    wsBE_GetWSVariablesForLO_C=wsBE_UpdateWSV_C+1. %38
 
 end class ws_eventManager

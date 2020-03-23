@@ -7,12 +7,16 @@ interface wSBE_Options
 predicates
     getShortFileName : (string FullFileName) -> string ShortFileName.
     getFullFileName : (string ShortFileName) -> string FullFileName.
-    getVirtualDir_nd : (string Name [out],string DirValue [out],boolean FlagVip [out]) nondeterm.
+    getVirtualDir_nd : (string Name [out],string DirValue [out],boolean FlagVip [out],string IdeVarsFile [out]) nondeterm.
     existVirtualName : (string Name) determ.
     insertVirtualDir : (string Name,string NewDirValue).
     updateVirtualDir : (string Name,string NewDirValue).
     deleteVirtualDir : (string Name).
     getSourceColor_nd : (string Name [out],integer FGColor [out],integer BGColor [out]) nondeterm.
+    setVipVirtualDir : (namedValue* VipVirtualDir).
+    setWSVariableFile : (string NewWSVFile).
+properties
+    wsv_file : string.
 
 % Perform's options supports
 predicates
@@ -25,6 +29,7 @@ predicates
     updateSourceLocalOptions : (namedValue* ExtOptionsList).
     getSelectSourceType : () -> string SelectSourceType.
     updateSelectSourceType : (namedValue* SelectSourceType).
+    getCompRun_nd : (string CompName [out],string Synname [out]) nondeterm.
 
 predicates
     getFrontEndOptionsList : () -> namedValue*.

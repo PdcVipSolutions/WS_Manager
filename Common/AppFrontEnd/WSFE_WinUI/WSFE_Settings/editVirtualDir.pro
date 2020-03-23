@@ -5,6 +5,7 @@ implement editVirtualDir inherits dialog
 
 facts
     is_Ok : boolean := false.
+    messageFormatStr : string := "The directory '%s' not exist. Do you create it?".
 
 clauses
     setVirtualDirectory(Name, Directory, TitleList) :-
@@ -14,7 +15,8 @@ clauses
             setText(namedValue::getNamed_string(TitleList, "ttlEditVirtDir"))
         else
             setText(namedValue::getNamed_string(TitleList, "ttlCreateVirtDir")),
-            editName_ctl:addModifiedListener(onEditNameModified)
+            editName_ctl:addModifiedListener(onEditNameModified),
+            editValue_ctl:addModifiedListener(onEditNameModified)
         end if,
         ok_ctl:setText(namedValue::getNamed_string(TitleList, "pbOk")),
         cancel_ctl:setText(namedValue::getNamed_string(TitleList, "pbCancel")),
@@ -24,7 +26,7 @@ clauses
         value_ctl:setText(namedValue::getNamed_string(TitleList, "txtDir")),
         errorText_ctl:setText(namedValue::getNamed_string(TitleList, "txtError")),
         editValue_ctl:setText(Directory),
-        ok_ctl:setEnabled(toBoolean(Directory <> "")).
+        messageFormatStr := namedValue::getNamed_string(TitleList, "msgFormat").
 
 clauses
     getReturnValue() = if true = is_Ok then some(tuple(editName_ctl:getText(), editValue_ctl:getText())) else core::none end if.
@@ -57,6 +59,20 @@ clauses
 predicates
     onOkClick : button::clickResponder.
 clauses
+    onOkClick(_Source) = Action :-
+        Dir = editValue_ctl:getText(),
+        not(directory::existExactDirectory(Dir)),
+        !,
+        Message = string::format(messageFormatStr, Dir),
+        Answer = vpiCommonDialogs::messageBox("Warning", Message, mesbox_iconQuestion,
+                    mesbox_buttonsYesNo, mesbox_defaultFirst, mesbox_suspendApplication),
+        if idc_ok = Answer then
+            directory::makeDirectoryPath(Dir),
+            is_Ok := true,
+            Action = button::defaultAction
+        else
+            Action = button::noAction
+        end if.
     onOkClick(_Source) = button::defaultAction :-
         is_Ok := true.
 
@@ -81,7 +97,8 @@ clauses
         convert(virtualDirTab, getParent()):existName(string::concat("$(", Name, ")")),
         errorText_ctl:setVisible(true).
 
-% This code is maintained automatically, do not update it manually. 16:59:00-2.9.2016
+% This code is maintained automatically, do not update it manually.
+%  13:15:21-10.10.2018
 
 facts
     ok_ctl : button.
@@ -112,7 +129,6 @@ clauses
         editValue_ctl:setPosition(98, 16),
         editValue_ctl:setWidth(226),
         editValue_ctl:setTabStop(false),
-        editValue_ctl:setReadOnly(),
         browse_ctl := button::new(This),
         browse_ctl:setText("&Browse..."),
         browse_ctl:setPosition(328, 16),
@@ -122,23 +138,24 @@ clauses
         browse_ctl:setClickResponder(onBrowseClick),
         ok_ctl := button::newOk(This),
         ok_ctl:setText("&OK"),
-        ok_ctl:setPosition(180, 36),
+        ok_ctl:setPosition(244, 36),
         ok_ctl:setSize(56, 12),
         ok_ctl:defaultHeight := false,
         ok_ctl:setAnchors([control::right, control::bottom]),
         ok_ctl:setClickResponder(onOkClick),
         cancel_ctl := button::newCancel(This),
         cancel_ctl:setText("&Cancel"),
-        cancel_ctl:setPosition(244, 36),
+        cancel_ctl:setPosition(308, 36),
         cancel_ctl:setSize(56, 12),
         cancel_ctl:defaultHeight := false,
         cancel_ctl:setAnchors([control::right, control::bottom]),
         help_ctl := button::new(This),
         help_ctl:setText("&Help"),
-        help_ctl:setPosition(308, 36),
-        help_ctl:setSize(56, 12),
-        help_ctl:defaultHeight := false,
+        help_ctl:setPosition(156, 36),
+        help_ctl:setWidth(56),
+        help_ctl:defaultHeight := true,
         help_ctl:setAnchors([control::right, control::bottom]),
+        help_ctl:setVisible(false),
         name_ctl := textControl::new(This),
         name_ctl:setText("Name:"),
         name_ctl:setPosition(16, 4),

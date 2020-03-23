@@ -1,6 +1,8 @@
 ﻿#include @"ws_manager\common\AppBackEnd\WSBE_PerformByExt\WSBE_PerformByExt.ph"
 
 % privately used packages
+#include @"pfc\codePageId\codePageId.ph"
+#include @"pfc\environment\environment.ph"
 #include @"pfc\log\Log.ph"
 #include @"pfc\namedValue\namedValue.ph"
 #include @"ws_manager\common\AppBackEnd\WSBE_PerformCMD\wsBE_PerformCMD.ph"

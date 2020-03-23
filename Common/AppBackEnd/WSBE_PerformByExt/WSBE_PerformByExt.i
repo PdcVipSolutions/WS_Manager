@@ -15,18 +15,25 @@ properties
     runEnabled_P : boolean.
     execEnabled_P : boolean.
 
-    streamModeIndex_P:positive.
-    codePage_P:codePage.
+    streamModeOn_P : boolean.
+    streamModeIndex_P : positive.
+    codePage_P : codePage.
+    inputStreamFile_P : string.
 
-    performOpen_P:boolean.
-    performRun_P:boolean.
-    performExec_P:boolean.
+    performOpen_P : boolean.
+    performRun_P : boolean.
+    performExec_P : boolean.
+    checkStatus_P : boolean.
 
 properties
-    sourcePerformer_P:string.
-    sourceEditor_P:string.
+    winAssExecute_P : boolean.
+    formatCmd_P : string.
+    sourcePerformer_P : string.
+    sourceEditor_P : string.
+    keyWords_P : namedValue*.
 
 predicates
+%    startRun:() -> string FullCommandLine.
     startRun:(string RunMode) -> string FullCommandLine.
 
 predicates

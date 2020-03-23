@@ -7,12 +7,15 @@ implement performExtCtl
 facts
     extOptionsList_P : namedValue*.
 
-    openTab_P : openTab.
-    runTab_P : runTab.
-    execTab_P : execTab.
+%    openTab_P : openTab.
+%    runTab_P : runTab.
+%    execTab_P : execTab.
+
+    cmdTab : (integer Index, tabPage TabPage, commandTab CommandTab).
 
     xml_ExtOptions : (string Ext, xmlDocument).
     codePageList_F : namedValue* := [].
+    formatResultStr_f : string := "".
 
     optionsDialog : wsfe_Settings.
 
@@ -23,25 +26,13 @@ clauses
         setContainer(Parent),
         optionsDialog := Wsfe_Settings,
         TitleDialogList = optionsDialog:getDialogTitleList("performExtCtl"),
-        Page1 = tabPage::new(),
-        openTab_P := openTab::new(Page1:getContainerControl()),
-        Page1:setText(namedValue::getNamed_string(TitleDialogList, "tabOpen")),
-        tabControl_ctl:addPage(Page1),
-        Page2 = tabPage::new(),
-        runTab_P := runTab::new(Page2:getContainerControl()),
-        Page2:setText(namedValue::getNamed_string(TitleDialogList, "tabRun")),
-        tabControl_ctl:addPage(Page2),
-        Page3 = tabPage::new(),
-        execTab_P := execTab::new(Page3:getContainerControl()),
-        Page3:setText(namedValue::getNamed_string(TitleDialogList, "tabExecute")),
-        tabControl_ctl:addPage(Page3),
+        setupCommandTabs(TitleDialogList),
         addExt_ctl:setText(namedValue::getNamed_string(TitleDialogList, "pbAdd")),
         delExt_ctl:setText(namedValue::getNamed_string(TitleDialogList, "pbDelete")),
         staticText1_ctl:setText(namedValue::getNamed_string(TitleDialogList, "txtValue")),
         staticText5_ctl:setText(namedValue::getNamed_string(TitleDialogList, "txtCmpName")),
         staticText_ctl:setText(namedValue::getNamed_string(TitleDialogList, "txtName")),
-        setStreamModeValues(),
-        setControlsID(),
+        formatResultStr_f := namedValue::getNamed_string(TitleDialogList, "txtResultStr"),
         extOptionsList_P := ExtOptionsList,
         ExtList = [Name || namedValue(Name,_) in ExtOptionsList],
         extLBox_ctl:addList(ExtList),
@@ -52,157 +43,144 @@ clauses
                 extLBox_ctl:selectAt(0, true)
             end if
         end if,
-        addControlsText(TitleDialogList),
-        addControlsListners().
+        !.
 
 predicates
-    setStreamModeValues : ().
+    setupCommandTabs : (namedValue* TitleDialogList).
 clauses
-    setStreamModeValues():-
-        runTab_P:lbSteramMode_P:addList(["unicode","ansi(codePage)","binary"]),
-        runTab_P:lbSteramMode_P:selectAt(0, true),
+    setupCommandTabs(TitleDialogList):-
+        retractAll(cmdTab(_,_,_)),
+        foreach Index = std::cIterate(commandMax)+1 do
+            Page = tabPage::new(),
+            CommandTab = commandTab::new(Page:getContainerControl()),
+            Page:setText(string::format("Command # %", Index)),
+            assert(cmdTab(Index, Page, CommandTab)),
+            tabControl_ctl:addPage(Page),
+            setStreamModeValues(CommandTab),
+            setControlsID(CommandTab),
+            addControlsText(CommandTab, TitleDialogList),
+            addControlsListners(CommandTab)
+        end foreach,
+        editComponentName_ctl:setCtrlId(editComponentName_id),
+        editComponentName_ctl:addModifiedListener(onComponentEditorModified).
+
+predicates
+    setStreamModeValues : (commandTab CommandTab).
+clauses
+    setStreamModeValues(CommandTab):-
+        CommandTab:lbSteramMode_P:addList(["unicode","ansi(codePage)","binary"]),
+        CommandTab:lbSteramMode_P:selectAt(0, true),
         SubKeys = registry::getSubkeys(registry::classesRoot, @"MIME\Database\CodePage"),
         codePageList_F := [namedValue(SubKey, string(CodePage)) ||
             SubKey in SubKeys,
             Key = string::format(@"MIME\Database\CodePage\%", SubKey),
             string(CodePage) = registry::tryGetValue(registry::classesRoot, Key, "BodyCharset")],
-        runTab_P:lbCodePage_P:addList([CP||namedValue(_, string(CP)) in codePageList_F]),
-        runTab_P:lbCodePage_P:selectAt(0, true).
+        CommandTab:lbCodePage_P:addList([CP||namedValue(_, string(CP)) in codePageList_F]),
+        CommandTab:lbCodePage_P:selectAt(0, true).
 
 predicates
-    addControlsText: (namedValue* TitleDialogList).
+    addControlsText: (commandTab CommandTab, namedValue* TitleDialogList).
 clauses
-    addControlsText(TitleDialogList):-
-        openTab_P:browseEditor_P:setText(namedValue::getNamed_string(TitleDialogList, "pbBrowse")),
-        OpenFormatStr = namedValue::getNamed_string(TitleDialogList, "txtOpenFormat"),
-        EditorFileStr = namedValue::getNamed_string(TitleDialogList, "txtEditorFile"),
-        openTab_P:txtEditorFile_P:setText(EditorFileStr),
+    addControlsText(CommandTab, TitleDialogList):-
+        CommandTab:browseEditor_P:setText(namedValue::getNamed_string(TitleDialogList, "pbBrowse")),
+        ApplicationFileStr = namedValue::getNamed_string(TitleDialogList, "txtApplicationFile"),
+        CommandTab:txtApplicationFile_P:setText(ApplicationFileStr),
         ArgumentsStr = namedValue::getNamed_string(TitleDialogList, "txtArguments"),
-        openTab_P:txtArguments_P:setText(ArgumentsStr),
+        CommandTab:txtArguments_P:setText(ArgumentsStr),
         FormatCmdStr = namedValue::getNamed_string(TitleDialogList, "txtFormatCmd"),
-        OpenFormatText = string::concat(FormatCmdStr,": ",string::format(OpenFormatStr, EditorFileStr, ArgumentsStr)),
-        openTab_P:txtFormatCommand_P:setText(OpenFormatText),
-        FormatResultStr = namedValue::getNamed_string(TitleDialogList, "txtResultStr"),
-        openTab_P:gbResultStr_P:setText(string::format(FormatResultStr, namedValue::getNamed_string(TitleDialogList, "tabOpen"))),
-        runTab_P:gbResultStr_P:setText(string::format(FormatResultStr, namedValue::getNamed_string(TitleDialogList, "tabRun"))),
-        execTab_P:gbResultStr_P:setText(string::format(FormatResultStr, namedValue::getNamed_string(TitleDialogList, "tabExecute"))),
+        CommandTab:txtFormatCommand_P:setText(FormatCmdStr),
         PerformAtFrontEnd = namedValue::getNamed_string(TitleDialogList, "txtPerformFE"),
-        openTab_P:cbFEMode_P:setText(PerformAtFrontEnd),
-        runTab_P:cbFEMode_P:setText(PerformAtFrontEnd),
-        execTab_P:cbFEMode_P:setText(PerformAtFrontEnd),
-        runTab_P:browseEditor_P:setText(namedValue::getNamed_string(TitleDialogList, "pbBrowse")),
-        runTab_P:browseSuffix_P:setText(namedValue::getNamed_string(TitleDialogList, "pbBrowse")),
-        runTab_P:txtCodePage_P:setText(namedValue::getNamed_string(TitleDialogList, "txtCodePage")),
-        runTab_P:txtStreamMode_P:setText(namedValue::getNamed_string(TitleDialogList, "txtStreamMode")),
-        RunFileStr = namedValue::getNamed_string(TitleDialogList, "txtRunFile"),
-        runTab_P:txtRunFile_P:setText(RunFileStr),
-        runTab_P:gbArguments_P:setText(namedValue::getNamed_string(TitleDialogList, "gbArgForRun")),
-        runTab_P:txtRunMode_P:setText(namedValue::getNamed_string(TitleDialogList, "txtRunMode")),
-        runTab_P:txtReRunMode_P:setText(namedValue::getNamed_string(TitleDialogList, "txtReRunMode")),
+        CommandTab:cbFEMode_P:setText(PerformAtFrontEnd),
+        DefaultCommand = namedValue::getNamed_string(TitleDialogList, "txtDefCommand"),
+        CommandTab:cbDefCommand_P:setText(DefaultCommand),
+        CommandTab:browseSuffix_P:setText(namedValue::getNamed_string(TitleDialogList, "pbBrowse")),
+        CommandTab:txtCodePage_P:setText(namedValue::getNamed_string(TitleDialogList, "txtCodePage")),
+%        CommandTab:txtStreamMode_P:setText(namedValue::getNamed_string(TitleDialogList, "txtStreamMode")),
+        CommandTab:cbStreamMode_P:setText(namedValue::getNamed_string(TitleDialogList, "cbStreamMode")),
         SuffixStr = namedValue::getNamed_string(TitleDialogList, "txtSuffix"),
-        runTab_P:txtSuffix_P:setText(SuffixStr),
-        RunFormatStr = namedValue::getNamed_string(TitleDialogList, "txtRunFormat"),
-        RunFormatText = string::concat(FormatCmdStr,": ",string::format(RunFormatStr, RunFileStr, ArgumentsStr, SuffixStr)),
-        runTab_P:txtFormatCommand_P:setText(RunFormatText),
-        CommandLineStr = namedValue::getNamed_string(TitleDialogList, "txtCommandLine"),
-        execTab_P:txtCommandLine_P:setText(CommandLineStr),
-        execTab_P:txtArguments_P:setText(ArgumentsStr),
-        execTab_P:cbExecutePossible_P:setText(namedValue::getNamed_string(TitleDialogList, "cbCmdEnabled")),
-        ExecFormatStr = namedValue::getNamed_string(TitleDialogList, "txtExecFormat"),
-        ExecFormatText = string::concat(FormatCmdStr,": ",string::format(ExecFormatStr, CommandLineStr, ArgumentsStr)),
-        execTab_P:txtFormatCommand_P:setText(ExecFormatText).
+        CommandTab:txtSuffix_P:setText(SuffixStr),
+        CommandTab:cbCallAssociations_P:setText(namedValue::getNamed_string(TitleDialogList, "cbInvokeWinAss")),
+        !.
 
 predicates
-    setControlsID : ().
+    setControlsID : (commandTab CommandTab).
 clauses
-    setControlsID():-
-        openTab_P:editorFileName_P:setCtrlId(editorFileName_id),
-        openTab_P:editArgString_P:setCtrlId(editArgString_id),
-        openTab_P:browseEditor_P:setCtrlId(browseEditor_id),
-        openTab_P:cbFEMode_P:setCtrlId(performOpen_id),
-        runTab_P:editorFileName_P:setCtrlId(runFileName_id),
-        runTab_P:editArgStringForRun_P:setCtrlId(editArgStringForRun_id),
-        runTab_P:editArgStringForReRun_P:setCtrlId(editArgStringForReRun_id),
-        runTab_P:editSuffix_P:setCtrlId(editSuffix_id),
-        runTab_P:browseEditor_P:setCtrlId(browseRun_id),
-        editComponentName_ctl:setCtrlId(editComponentName_id),
-        runTab_P:lbSteramMode_P:setCtrlId(lbSteramMode_id),
-        runTab_P:lbCodePage_P:setCtrlId(lbCodePage_id),
-        runTab_P:browseSuffix_P:setCtrlId(browseSuffix_id),
-        runTab_P:cbFEMode_P:setCtrlId(performRun_id),
-        execTab_P:editCmdString_P:setCtrlId(execCmdString_id),
-        execTab_P:editArgString_P:setCtrlId(execArgString_id),
-        execTab_P:getMacroSymbols_P:setCtrlId(getMacroSymbols_id),
-        execTab_P:cbFEMode_P:setCtrlId(performExec_id),
-        execTab_P:cbExecutePossible_P:setCtrlId(cbExecutePossible_id).
+    setControlsID(CommandTab):-
+        CommandTab:applicationFileName_P:setCtrlId(editorFileName_id),
+        CommandTab:editArguments_P:setCtrlId(editArgString_id),
+        CommandTab:browseEditor_P:setCtrlId(browseEditor_id),
+        CommandTab:cbFEMode_P:setCtrlId(performOpen_id),
+        CommandTab:cbDefCommand_P:setCtrlId(defCommand_id),
+        CommandTab:editSuffix_P:setCtrlId(editSuffix_id),
+        CommandTab:lbSteramMode_P:setCtrlId(lbSteramMode_id),
+        CommandTab:lbCodePage_P:setCtrlId(lbCodePage_id),
+        CommandTab:browseSuffix_P:setCtrlId(browseSuffix_id),
+        CommandTab:getMacroSymbols_P:setCtrlId(getMacroSymbols_id),
+        CommandTab:cbCallAssociations_P:setCtrlId(cbCallAssociations_id),
+        CommandTab:editFormatCommand_P:setCtrlId(editFormatCommand_id).
+%        CommandTab:editCommandName_P:setCtrlId(editCommandName_id).
 
 predicates
-    addControlsListners : ().
+    addControlsListners : (commandTab CommandTab).
 clauses
-    addControlsListners():-
-        openTab_P:editorFileName_P:addModifiedListener(onEditorModified),
-        openTab_P:editArgString_P:addModifiedListener(onEditorModified),
-        runTab_P:editorFileName_P:addModifiedListener(onEditorModified),
-        runTab_P:editArgStringForRun_P:addModifiedListener(onEditorModified),
-        runTab_P:editArgStringForReRun_P:addModifiedListener(onEditorModified),
-        runTab_P:editSuffix_P:addModifiedListener(onEditorModified),
-        editComponentName_ctl:addModifiedListener(onEditorModified),
-        runTab_P:lbSteramMode_P:addSelectionChangedListener(onStreamModeSelectionChanged),
-        runTab_P:lbCodePage_P:addSelectionChangedListener(onCodePageSelectionChanged),
-        execTab_P:editCmdString_P:addModifiedListener(onEditorModified),
-        execTab_P:editArgString_P:addModifiedListener(onEditorModified),
-%        execTab_P:getMacroSymbols_P:setClickResponder(onGetMacroSymbolsClick),
-        openTab_P:cbFEMode_P:addStateChangedListener(onCbPerformStateChanged),
-        runTab_P:cbFEMode_P:addStateChangedListener(onCbPerformStateChanged),
-        execTab_P:cbFEMode_P:addStateChangedListener(onCbPerformStateChanged),
-        execTab_P:cbExecutePossible_P:addStateChangedListener(onCbExecutePossibleStateChanged).
+    addControlsListners(CommandTab):-
+        CommandTab:applicationFileName_P:addModifiedListener(onEditorModified),
+        CommandTab:editArguments_P:addModifiedListener(onEditorModified),
+        CommandTab:editFormatCommand_P:addModifiedListener(onEditorModified),
+%        CommandTab:editCommandName_P:addModifiedListener(onEditorModified),
+        CommandTab:editSuffix_P:addModifiedListener(onEditorModified),
+        CommandTab:lbSteramMode_P:addSelectionChangedListener(onStreamModeSelectionChanged),
+        CommandTab:lbCodePage_P:addSelectionChangedListener(onCodePageSelectionChanged),
+        CommandTab:cbFEMode_P:addStateChangedListener(onCbPerformStateChanged),
+        CommandTab:getMacroSymbols_P:setClickResponder(optionsDialog:onGetMacroSymbolsClick),
+        CommandTab:cbCallAssociations_P:addStateChangedListener(onCbCallAssociationsStateChanged),
+        CommandTab:browseEditor_P:setClickResponder(optionsDialog:onBrowseEditorClick),
+        CommandTab:browseSuffix_P:setClickResponder(optionsDialog:onBrowseEditorClick).
 
 predicates
-    onCbExecutePossibleStateChanged : checkButton::stateChangedListener.
+    onCbCallAssociationsStateChanged : checkButton::stateChangedListener.
 clauses
-    onCbExecutePossibleStateChanged(Source, _OldState, _NewState):-
-        NewValue = toString(Source:getChecked()),
-        if
-            Index = extLBox_ctl:tryGetSelectedIndex(),
-            ExtName = extLBox_ctl:getAt(Index),
-            xml_ExtOptions(ExtName, Xml_Options),
-            GroupNode = Xml_Options:getNode_nd([root(), child(groupNode_C, { (O) :- O:attribute(title_C) = "ExtOptions" })])
-        then
-            if Node = Xml_Options:getNode_nd([current(GroupNode), child(sourceExecute_C, { (_) })]) then
-            else
-                Node = xmlElement::new("", sourceExecute_C,GroupNode),
-%                Node:name_P := sourceExecute_C,
-                GroupNode:addNode(Node)
-            end if,
-            if _ = Node:attribute(execOn_C) then
-                Node:modifyAttribute(execOn_C, NewValue)
-            else
-                Node:addAttribute(execOn_C, NewValue)
-            end if
-        end if.
+    onCbCallAssociationsStateChanged(_Source, _OldState, _NewState):-
+        !.
+
+%predicates
+%    onCbExecutePossibleStateChanged : checkButton::stateChangedListener.
+%clauses
+%    onCbExecutePossibleStateChanged(Source, _OldState, _NewState):-
+%        NewValue = toString(Source:getChecked()),
+%        if
+%            Index = extLBox_ctl:tryGetSelectedIndex(),
+%            ExtName = extLBox_ctl:getAt(Index),
+%            xml_ExtOptions(ExtName, Xml_Options),
+%            GroupNode = Xml_Options:getNode_nd([root(), child(groupNode_C, { (O) :- O:attribute(title_C) = "ExtOptions" })])
+%        then
+%            if Node = Xml_Options:getNode_nd([current(GroupNode), child(sourceExecute_C, { (_) })]) then
+%            else
+%                Node = xmlElement::new("", sourceExecute_C,GroupNode),
+%%                Node:name_P := sourceExecute_C,
+%                GroupNode:addNode(Node)
+%            end if,
+%            if _ = Node:attribute(execOn_C) then
+%                Node:modifyAttribute(execOn_C, NewValue)
+%            else
+%                Node:addAttribute(execOn_C, NewValue)
+%            end if
+%        end if.
 
 predicates
     onCbPerformStateChanged : checkButton::stateChangedListener.
 clauses
     onCbPerformStateChanged(Source, _OldState, _NewState):-
         NewValue = toString(Source:getChecked()),
-        if Source:getCtrlId() = performOpen_id then NodeName = sourceEditor_C
-        elseif Source:getCtrlId() = performRun_id then  NodeName = sourcePerformer_C
-        elseif Source:getCtrlId() =  performExec_id then NodeName = sourceExecute_C
-        else NodeName = ""
-        end if,
+        CommandTab = convert(commandTab, Source:getParent()),
         if
+            cmdTab(TabIndex, _, CommandTab),
             Index = extLBox_ctl:tryGetSelectedIndex(),
             ExtName = extLBox_ctl:getAt(Index),
             xml_ExtOptions(ExtName, Xml_Options),
-            GroupNode = Xml_Options:getNode_nd([root(), child(groupNode_C, { (O) :- O:attribute(title_C) = "ExtOptions" })])
+            GroupNode = Xml_Options:getNode_nd([root(), child(groupNode_C, { (O) :- O:attribute(title_C) = "ExtOptions" })]),
+            Node = Xml_Options:getNode_nd([current(GroupNode), child("*", { (CN) :- CN:attribute(index_C) = toString(TabIndex)})])
         then
-            if Node = Xml_Options:getNode_nd([current(GroupNode), child(NodeName, { (_) })]) then
-            else
-                Node = xmlElement::new("", NodeName,GroupNode),
-%                Node:name_P := NodeName,
-                GroupNode:addNode(Node)
-            end if,
             if _ = Node:attribute(feMode_C) then
                 Node:modifyAttribute(feMode_C, NewValue)
             else
@@ -214,60 +192,68 @@ predicates
     onEditorModified : editControl::modifiedListener.
 clauses
     onEditorModified(Source):-
+        CommandTab = convert(commandTab, Source:getParent()),
         updateAttribute(Source),
-        updateResultString().
+        updateResultString(CommandTab).
+
+predicates
+    onComponentEditorModified : editControl::modifiedListener.
+clauses
+    onComponentEditorModified(Source):-
+        NewValue = string::trim(Source:getText()),
+        if
+            Index = extLBox_ctl:tryGetSelectedIndex(),
+            ExtName = extLBox_ctl:getAt(Index),
+            xml_ExtOptions(ExtName, Xml_Options),
+            GroupNode = Xml_Options:getNode_nd([root(), child(groupNode_C, { (O) :- O:attribute(title_C) = "ExtOptions" })]),
+            Node = Xml_Options:getNode_nd([current(GroupNode), child("common", { (_) })])
+        then
+            if _ = Node:attribute(componentName_C) then
+                Node:modifyAttribute(componentName_C, NewValue)
+            elseif NewValue <> "" then
+                Node:addAttribute(componentName_C, NewValue)
+            end if
+        end if.
 
 clauses
-    updateResultString():-
-        OpenResultString = string::format(@{% % "$(SourceFile)"}, openTab_P:editorFileName_P:getText(), openTab_P:editArgString_P:getText()),
-        openTab_P:resultCommandLine_P:setText(OpenResultString),
-        RunResultString = string::format(@{% % "$(SourceFile)" %},
-                                                            runTab_P:editorFileName_P:getText(),
-                                                            runTab_P:editArgStringForRun_P:getText(),
-                                                            runTab_P:editSuffix_P:getText()),
-        runTab_P:resultCommandLine_P:setText(RunResultString),
-        ExecResultString = string::format(@{% %},
-                                                            execTab_P:editCmdString_P:getText(),
-                                                            execTab_P:editArgString_P:getText()),
-        execTab_P:resultCommandLine_P:setText(ExecResultString).
+    updateResultString(CommandTab):-
+        FC = CommandTab:editFormatCommand_P:getText(),
+        FC1 = string::replaceAll(FC, "[Application]", CommandTab:applicationFileName_P:getText()),
+        FC2 = string::replaceAll(FC1, "[Arguments]", CommandTab:editArguments_P:getText()),
+        FC3 = string::replaceAll(FC2, "[Suffix]", CommandTab:editSuffix_P:getText()),
+        CommandTab:resultCommandLine_P:setText(FC3),
+        !.
 
 clauses
     updateAttribute(Source):-
         ID = Source:getCtrlId(),
         NewValue = string::trim(Source:getText()),
-        if ID in [editorFileName_id, editArgString_id] then NodeName = sourceEditor_C
-        elseif ID in [runFileName_id, editArgStringForRun_id, editArgStringForReRun_id, editSuffix_id, editComponentName_id] then NodeName = sourcePerformer_C
-        elseif ID in [execCmdString_id,execArgString_id] then NodeName = sourceExecute_C
-        else NodeName = ""
-        end if,
-        if editorFileName_id = ID then AttributeName = fileName_C
-        elseif editArgString_id = ID then AttributeName = argEditor_C
-        elseif runFileName_id = ID then AttributeName = fileName_C
-        elseif editArgStringForRun_id = ID then AttributeName = argPerformer_C
-        elseif editArgStringForReRun_id = ID then AttributeName = reargPerformer_C
-        elseif editSuffix_id = ID then AttributeName = suffixPerformer_C
-        elseif editComponentName_id = ID then AttributeName = componentName_C
-        elseif execCmdString_id = ID then AttributeName = cmdExecute_C
-        elseif execArgString_id = ID then AttributeName = argExecute_C
-        else AttributeName = ""
-        end if,
+        CommandTab = convert(commandTab, Source:getParent()),
         if
-            NodeName <> "" and AttributeName <> "",
+            cmdTab(TabIndex, PageTab, CommandTab),
             Index = extLBox_ctl:tryGetSelectedIndex(),
             ExtName = extLBox_ctl:getAt(Index),
             xml_ExtOptions(ExtName, Xml_Options),
-            GroupNode = Xml_Options:getNode_nd([root(), child(groupNode_C, { (O) :- O:attribute(title_C) = "ExtOptions" })])
+            GroupNode = Xml_Options:getNode_nd([root(), child(groupNode_C, { (O) :- O:attribute(title_C) = "ExtOptions" })]),
+            Node = Xml_Options:getNode_nd([current(GroupNode), child("*", { (CN) :- CN:attribute(index_C) = toString(TabIndex)})])
         then
-            if Node = Xml_Options:getNode_nd([current(GroupNode), child(NodeName, { (_) })]) then
-            else
-                Node = xmlElement::new("", NodeName,GroupNode),
-%                Node:name_P := NodeName,
-                GroupNode:addNode(Node)
+            if editorFileName_id = ID then AttributeName = fileName_C
+            elseif editFormatCommand_id = ID then AttributeName = formatCmd_C
+            elseif editCommandName_id = ID then
+                AttributeName = name_C,
+                CommandTab:gbResultStr_P:setText(string::format(formatResultStr_f, NewValue)),
+                PageText =  if NewValue = "" then string::format("Command # %", TabIndex) else NewValue end if,
+                PageTab:setText(PageText)
+            elseif editArgString_id = ID then AttributeName = argument_C
+            elseif editSuffix_id = ID then AttributeName = suffix_C
+            else AttributeName = ""
             end if,
-            if _ = Node:attribute(AttributeName) then
-                Node:modifyAttribute(AttributeName, NewValue)
-            elseif NewValue <> "" then
-                Node:addAttribute(AttributeName, NewValue)
+            if AttributeName <> "" then
+                if _ = Node:attribute(AttributeName) then
+                    Node:modifyAttribute(AttributeName, NewValue)
+                elseif NewValue <> "" then
+                    Node:addAttribute(AttributeName, NewValue)
+                end if
             end if
         end if.
 
@@ -275,20 +261,17 @@ predicates
     onStreamModeSelectionChanged : listControl::selectionChangedListener.
 clauses
     onStreamModeSelectionChanged(Source):-
+        CommandTab = convert(commandTab, Source:getParent()),
         if
+            cmdTab(TabIndex, _PageTab, CommandTab),
             Index = Source:tryGetSelectedIndex(),
-            runTab_P:lbCodePage_P:setEnabled(toBoolean(1 /*ansi(codePage)*/ = Index)),
+            CommandTab:lbCodePage_P:setEnabled(toBoolean(1 /*ansi(codePage)*/ = Index)),
             IndexLB = extLBox_ctl:tryGetSelectedIndex(),
             ExtName = extLBox_ctl:getAt(IndexLB),
             xml_ExtOptions(ExtName, Xml_Options),
-            GroupNode = Xml_Options:getNode_nd([root(), child(groupNode_C, { (O) :- O:attribute(title_C) = "ExtOptions" })])
+            GroupNode = Xml_Options:getNode_nd([root(), child(groupNode_C, { (O) :- O:attribute(title_C) = "ExtOptions" })]),
+            Node = Xml_Options:getNode_nd([current(GroupNode), child("*", { (CN) :- CN:attribute(index_C) = toString(TabIndex)})])
         then
-            if Node = Xml_Options:getNode_nd([current(GroupNode), child(sourcePerformer_C, { (_) })]) then
-            else
-                Node = xmlElement::new("",sourcePerformer_C, GroupNode),
-%                Node:name_P := sourcePerformer_C,
-                GroupNode:addNode(Node)
-            end if,
             if _ = Node:attribute(streamMode_C) then
                 Node:modifyAttribute(streamMode_C, toString(Index))
             else
@@ -300,21 +283,18 @@ predicates
     onCodePageSelectionChanged : listControl::selectionChangedListener.
 clauses
     onCodePageSelectionChanged(Source):-
+        CommandTab = convert(commandTab, Source:getParent()),
         if
+            cmdTab(TabIndex, _PageTab, CommandTab),
             Index = Source:tryGetSelectedIndex(),
             BodyCharset = Source:getAt(Index),
             namedValue(CodePage, string(BodyCharset)) = list::getMember_nd(codePageList_F),
             IndexLB = extLBox_ctl:tryGetSelectedIndex(),
             ExtName = extLBox_ctl:getAt(IndexLB),
             xml_ExtOptions(ExtName, Xml_Options),
-            GroupNode = Xml_Options:getNode_nd([root(), child(groupNode_C, { (O) :- O:attribute(title_C) = "ExtOptions" })])
+            GroupNode = Xml_Options:getNode_nd([root(), child(groupNode_C, { (O) :- O:attribute(title_C) = "ExtOptions" })]),
+            Node = Xml_Options:getNode_nd([current(GroupNode), child("*", { (CN) :- CN:attribute(index_C) = toString(TabIndex)})])
         then
-            if Node = Xml_Options:getNode_nd([current(GroupNode), child(sourcePerformer_C, { (_) })]) then
-            else
-                Node = xmlElement::new("", sourcePerformer_C,GroupNode),
-%                Node:name_P := sourcePerformer_C,
-                GroupNode:addNode(Node)
-            end if,
             if _ = Node:attribute(codePage_C) then
                 Node:modifyAttribute(codePage_C, CodePage)
             else
@@ -336,51 +316,50 @@ clauses
                 Xml_Options = extOptionsStr2xml_Options(ExtName, ExtOptionsStr)
             end if,
             foreach Node = Xml_Options:getNode_nd([root(), child(groupNode_C, { (_) }), child("*", { (_) })]) do
-                if Node:name_P = sourceEditor_C then
-                    SourceEditor = if E = Node:attribute(fileName_C) then E else "" end if,
-                    openTab_P:editorFileName_P:setText(SourceEditor),
-                    PerformOn = toBoolean("true" = Node:attribute(feMode_C)),
-                    openTab_P:cbFEMode_P:setChecked(PerformOn),
-                    ArgEditor = if AE = Node:attribute(argEditor_C) then AE else "" end if,
-                    openTab_P:editArgString_P:setText(ArgEditor)
-                elseif Node:name_P = sourcePerformer_C then
-                    ComponentName = if C = Node:attribute(componentName_C) then C else "" end if,
-                    editComponentName_ctl:setText(ComponentName),
-                    SourcePerformer = if S = Node:attribute(fileName_C) then S else "" end if,
-                    runTab_P:editorFileName_P:setText(SourcePerformer),
-                    ArgPerformer = if A = Node:attribute(argPerformer_C) then A else "" end if,
-                    runTab_P:editArgStringForRun_P:setText(ArgPerformer),
-                    ReArgPerformer = if RA = Node:attribute(reargPerformer_C) then RA else "" end if,
-                    runTab_P:editArgStringForReRun_P:setText(ReArgPerformer),
-                    SuffixPerformer = if SP = Node:attribute(suffixPerformer_C) then SP else "" end if,
-                    runTab_P:editSuffix_P:setText(SuffixPerformer),
-                    StreamModeIndex = if SMI = toTerm(positive, Node:attribute(streamMode_C)) then SMI else 0 end if,
-                    runTab_P:lbSteramMode_P:selectAt(StreamModeIndex, true),
-                    PerformOn = toBoolean("true" = Node:attribute(feMode_C)),
-                    runTab_P:cbFEMode_P:setChecked(PerformOn),
-                    if CP = Node:attribute(codePage_C),
-                        list::memberIndex_nd(NV, CodePageIndex, codePageList_F),
-                        NV = namedValue(CP, _)
-                    then
-                        runTab_P:lbCodePage_P:selectAt(CodePageIndex, true)
-                    else
-                        runTab_P:lbCodePage_P:selectAt(0, true)
-                    end if
-                elseif Node:name_P = sourceExecute_C then
-                    CmdExec = if CEx = Node:attribute(cmdExecute_C) then CEx else "" end if,
-                    execTab_P:editCmdString_P:setText(CmdExec),
-                    ArgExec = if AEx = Node:attribute(argExecute_C) then AEx else "" end if,
-                    execTab_P:editArgString_P:setText(ArgExec),
-                    PerformOn = toBoolean("true" = Node:attribute(feMode_C)),
-                    execTab_P:cbFEMode_P:setChecked(PerformOn),
-                    ExecOn = toBoolean("true" = Node:attribute(execOn_C)),
-                    execTab_P:cbExecutePossible_P:setChecked(ExecOn)
-                elseif Node:name_P = "common" then
+                if Node:name_P = "common" then
                     ExtListStr = if EL = Node:attribute(extName_C) then EL else "" end if,
-                    editExtList_ctl:setText(ExtListStr)
+                    editExtList_ctl:setText(ExtListStr),
+                    ComponentName = if C = Node:attribute(componentName_C) then C else "" end if,
+                    editComponentName_ctl:setText(ComponentName)
+                elseif
+                    TabIndex = tryToTerm(integer, Node:attribute(index_C)),
+                    cmdTab(TabIndex, Page, CommandTab)
+                then
+                    if
+                        CommandName = Node:attribute(name_C),
+                        CommandName <> ""
+                    then
+                        Page:setText(CommandName),
+                        CommandTab:editCommandName_P:setText(CommandName),
+                        CommandTab:gbResultStr_P:setText(string::format(formatResultStr_f, CommandName)),
+                        FormatCommand = if FC = Node:attribute(formatCmd_C) then FC else "" end if,
+                        CommandTab:editFormatCommand_P:setText(FormatCommand),
+                        ApplicationName = if S = Node:attribute(fileName_C) then S else "" end if,
+                        CommandTab:applicationFileName_P:setText(ApplicationName),
+                        Arguments = if A = Node:attribute(argument_C) then A else "" end if,
+                        CommandTab:editArguments_P:setText(Arguments),
+                        SuffixPerformer = if SP = Node:attribute(suffix_C) then SP else "" end if,
+                        CommandTab:editSuffix_P:setText(SuffixPerformer),
+                        StreamModeIndex = if SMI = toTerm(positive, Node:attribute(streamMode_C)) then SMI else 0 end if,
+                        CommandTab:lbSteramMode_P:selectAt(StreamModeIndex, true),
+                        PerformOn = toBoolean("true" = Node:attribute(feMode_C)),
+                        CommandTab:cbFEMode_P:setChecked(PerformOn),
+                        if CP = Node:attribute(codePage_C),
+                            list::memberIndex_nd(NV, CodePageIndex, codePageList_F),
+                            NV = namedValue(CP, _)
+                        then
+                            CommandTab:lbCodePage_P:selectAt(CodePageIndex, true)
+                        else
+                            CommandTab:lbCodePage_P:selectAt(0, true)
+                        end if
+                    else
+                        Page:setText(string::format("Command # %", TabIndex)),
+                        CommandTab:editCommandName_P:setText(""),
+                        CommandTab:gbResultStr_P:setText(string::format(formatResultStr_f, ""))
+                    end if
                 end if
-            end foreach,
-            updateResultString()
+            end foreach
+%            updateResultString()
         end if.
 
 predicates
@@ -452,16 +431,8 @@ clauses
 predicates
     splitExtListStr : (string ExtListStr) -> string* ExtList.
 clauses
-    splitExtListStr(ExtListStr) = [string::trim(Ext)|RestList] :-
-        string::splitStringBySeparators(ExtListStr, ",;", Ext, _, RestStr),
-        !,
-        RestList = splitExtListStr(RestStr).
-    splitExtListStr(ExtListStr) = Rest :-
-        if "" = string::trim(ExtListStr) then
-            Rest = []
-        else
-            Rest = [string::trim(ExtListStr)]
-        end if.
+    splitExtListStr(ExtListStr) =
+        list::filteredMap(string::split(ExtListStr, separatorsExt), {(S) = R :- R = string::trim(S), R <> ""}).
 
 predicates
     checkExtList : (string NameExt,string* NewExtList) -> tuple{string, string} determ.
@@ -482,7 +453,13 @@ clauses
         !.
 
 constants
-    newTemplateExtOptions_C : extOptions = [tuple(sourceEditor_C,[]),tuple(sourcePerformer_C,[]),tuple(sourceExecute_C,[])].
+    newTemplateExtOptions_C : extOptions =
+        [
+        tuple(command_C,[namedValue(index_C, string("1"))]),
+        tuple(command_C,[namedValue(index_C, string("2"))]),
+        tuple(command_C,[namedValue(index_C, string("3"))]),
+        tuple(command_C,[namedValue(index_C, string("4"))])
+        ].
 predicates
     addNewSourceType : (string NewName, string NewExtStr).
 clauses
@@ -505,14 +482,7 @@ clauses
             extLBox_ctl:delete(Index),
             if extOptionsList_P <> [] then
                 extLBox_ctl:selectAt(math::min(Index, list::length(extOptionsList_P)-1), true)
-            else
-                runTab_P:editorFileName_P:setText(""),
-                runTab_P:editArgStringForRun_P:setText(""),
-                runTab_P:editArgStringForReRun_P:setText(""),
-                runTab_P:editSuffix_P:setText(""),
-                openTab_P:editorFileName_P:setText(""),
-                openTab_P:editArgString_P:setText(""),
-                updateResultString()
+%            else
             end if
         end if.
 
@@ -602,11 +572,11 @@ clauses
         end if,
         OptionsValues = [tuple(Node:name_P, AttributesList)||
             Node = Xml_Options:getNode_nd([root(), child(groupNode_C, { (_) }), child("*", { (_) })]),
-            Node:name_P <> "common",
+%            Node:name_P <> "common",
             AttributesList = [namedValue(AttrName, string(AttrValue))||tuple(_AttrPrefix, AttrName, AttrValue) = Node:getAttribute_nd()]
             ].
 
-% This code is maintained automatically, do not update it manually. 15:15:09-30.9.2017
+% This code is maintained automatically, do not update it manually. 14:21:38-6.10.2017
 
 facts
     extLBox_ctl : listBox.

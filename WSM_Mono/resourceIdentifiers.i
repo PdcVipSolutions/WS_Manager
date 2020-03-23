@@ -2,6 +2,6 @@
 
 interface resourceIdentifiers
 constants
-    idi_workspace = 10000.    % WorkSpace.ico
-    idp_ribbonRemoveElem = 10001.    % $(ProDir)pfc\gui\controls\ribbonControl\ribbonDesignerDlg\ribbonRemoveElem.cur
+    idp_ribbonRemoveElem = 10000.    % $(ProDir)pfc\gui\controls\ribbonControl\ribbonDesignerDlg\ribbonRemoveElem.cur
+    id_jpg_vicshadow = 10001.    % $(SpbVipTools)Doc\VicShadow.jpg
 end interface resourceIdentifiers

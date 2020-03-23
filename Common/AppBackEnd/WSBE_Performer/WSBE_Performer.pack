@@ -1,6 +1,7 @@
 ﻿#include @"ws_manager\common\AppBackEnd\WSBE_Performer\WSBE_Performer.ph"
 
 % privately used packages
+#include @"pfc\windowsApi\Shell_api\Shell_api.ph"
 #include @"Packs\Logic\trace\trace.ph"
 #include @"pfc\log\Log.ph"
 #include @"ws_manager\common\AppBackEnd\WSBE_PerformByExt\WSBE_PerformByExt.ph"

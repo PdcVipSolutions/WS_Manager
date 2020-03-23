@@ -1,0 +1,82 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HTML>
+<HEAD>
+<meta name="GENERATOR" content="Microsoft&reg; HTML Help Workshop 4.1">
+<!-- Sitemap 1.0 -->
+</HEAD><BODY>
+<OBJECT type="text/site properties">
+	<param name="ImageType" value="Folder">
+</OBJECT>
+<UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Introduction">
+		<param name="Local" value="IntroductionEn.html">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Application's interface structure">
+		<param name="Local" value="InitialActionsEn.html">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Change the UI language">
+		<param name="Local" value="InitialActionsEn.html#SetLanguage">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Edit control panel layout">
+		<param name="Local" value="InitialActionsEn.html#EditLayout">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Create New and Open WorkSpace">
+		<param name="Local" value="InitialActionsEn.html#New_OpenWS">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Define file types and appropriate operations">
+		<param name="Local" value="FileTypeDefEn.html">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Create and Edit WSM-variables">
+		<param name="Local" value="CreateAndEditWSM_VarsEn.html">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Add and remove files">
+		<param name="Local" value="AddAndRemoveFilesEn.html">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="WorkSpace structuring ">
+		<param name="Local" value="WorkSpaceStructureEn.html">
+		</OBJECT>
+	<UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Add Groups and Folders">
+			<param name="Local" value="WorkSpaceStructureEn.html#AddNode">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Remove Group and Folder">
+			<param name="Local" value="WorkSpaceStructureEn.html#RemoveNode">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Rename Group and Folder">
+			<param name="Local" value="WorkSpaceStructureEn.html#RenameNode">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Move Group or Folder">
+			<param name="Local" value="WorkSpaceStructureEn.html#ManipulateGroupsAndFolders">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Move Files">
+			<param name="Local" value="WorkSpaceStructureEn.html#MoveFile">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Move files between groups">
+			<param name="Local" value="WorkSpaceStructureEn.html#MoveToGroup">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Manage line colors ">
+			<param name="Local" value="WorkSpaceStructureEn.html#LineColor">
+			</OBJECT>
+	</UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Perform file operations">
+		<param name="Local" value="FileActionsEn.html">
+		</OBJECT>
+</UL>
+</BODY></HTML>

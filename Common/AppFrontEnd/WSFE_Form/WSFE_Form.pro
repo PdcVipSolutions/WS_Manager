@@ -6,36 +6,36 @@ implement wsFE_Form
     inherits formWindow
     inherits formSplittedLayout{string}
     inherits wsFE_Connector
-    open core, vpiDomains, ribbonControl,treeModel_std, ws_eventManager, xmlNavigate, pfc\log
+    open core, vpiDomains, ribbonControl, ws_eventManager, xmlNavigate, pfc\log, listViewControl
 
 facts - options_FB
     selectNode_V:namedValue* := [].
 
 facts
-    wsFE_Command_P:wsFE_Command:=erroneous.
+    wsFE_Command_P:wsFE_Command := erroneous.
     progress : core::predicate{integer,string} := {(_,_):-succeed}.
 
-    localOptionsPanel_P :groupBox :=erroneous.
-    panelControl_ctl : listviewcontrol :=erroneous.
-    edit_ctl : editControl :=erroneous.
-    listButton_ctl : listButton :=erroneous.
-    feListButton_ctl : listButton :=erroneous.
+    localOptionsPanel_P : groupBox := erroneous.
+    panelControl_P : listviewcontrol := erroneous.
+    edit_ctl : editControl := erroneous.
+    listButton_ctl : listButton := erroneous.
     editSource_V : listViewControl::itemId := listViewControl::itemId_zero.
     newSourceLocalOptions_V : namedValue_list := [].
+    currentEditColumn_V : unsigned := 0.
+    addModeListValue_V : string_list := [].
+    columnList_V : listViewControl::column* := [].
 
     xml_ExtOptions : (string ExtName, string* ExtList, xmlDocument).
     filterMenuCommand : (string ExtName, checkCommand).
-    feModeByType : (string CmdName,string ExtName, boolean Value).
 
-    addModeListValue_V : string_list := [].
-    feModeListValue_V : string_list := [].
-    columnList_V : listViewControl::column* := [].
-    localOptionsList_V : tuple{listViewControl::itemId,string,string,string}* := [].
+    localOptionsList_V : tuple{listViewControl::itemId,string,string,string,string}* := [].
+    localExtOptionsList_F : string := "[]".
+    prevSelectExt : string := "".
 
 constants
-    edit_id = 2.
-    listButton_id = 3.
-    feListButton_id = 4.
+    appEdit_id = 3.
+    listButton_id = 4.
+    edit_id = 5.
 
 clauses
     display(Parent, FrontEnd) = Form :-
@@ -71,6 +71,9 @@ clauses
         wsFE_Command_P:=wsFE_Command::new(This,WS_FrontEnd),
         setTitle("",false).
 
+clauses
+    ribbonControl_P() = ribbonControl_ctl.
+
 constants
     groupTree_C:string="R1C1".
     vertSplitter_C:string="VS1".
@@ -78,25 +81,25 @@ constants
     horizSplitter_C:string="HS1".
     contentRow_C:string="R1".
     messageControl_C:string="R2".
-    panelHeight_C:integer=90.
+    panelHeight_C:integer=0.
 
 constants
     layout_C:content_D*=
         [
-        row(contentRow_C,300,formSplittedLayout::border,control::dockTop,
+        row(contentRow_C,250,formSplittedLayout::noBorder,control::dockTop,
             [
-            column(groupTree_C,160,formSplittedLayout::border,control::dockLeft,[]),
+            column(groupTree_C,160,formSplittedLayout::noBorder,control::dockLeft,[]),
             splitter(vertSplitter_C,control::dockLeft),
-            column(projectList_C,200,formSplittedLayout::border,control::dockFill,[])
+            column(projectList_C,200,formSplittedLayout::noBorder,control::dockFill,[])
             ]),
         splitter(horizSplitter_C,control::dockTop),
-        row(messageControl_C,50,formSplittedLayout::border,control::dockfill,[])
+        row(messageControl_C,150,formSplittedLayout::noBorder,control::dockfill,[])
         ].
 
 clauses
     layoutControl_nd(groupTree_C,"treeControl",56).
     layoutControl_nd(projectList_C,"listViewControl",70).
-    layoutControl_nd(messageControl_C,"messageControl",70).
+    layoutControl_nd(messageControl_C,"messageControl",100).
 
 clauses
     createControl(Container,"treeControl") = Control :-
@@ -119,13 +122,19 @@ clauses
         localOptionsPanel_P:dockStyle := control::dockBottom,
         localOptionsPanel_P:setHeight(panelHeight_C),
         createLocalPanelControls(localOptionsPanel_P).
+%        localOptionsList_V :=
+%            [
+%            tuple(cmdArgID_1, "1", "", "", argument_C),
+%            tuple(cmdArgID_2, "2", "", "", argument_C),
+%            tuple(cmdArgID_3, "3", "", "", argument_C),
+%            tuple(cmdArgID_4, "4", "", "", argument_C)
+%            ].
 
 constants
-    openItemID : listViewControl::itemId = uncheckedConvert(listViewControl::itemId,100).
-    runItemID : listViewControl::itemId = uncheckedConvert(listViewControl::itemId,101).
-    rerunItemID : listViewControl::itemId = uncheckedConvert(listViewControl::itemId,102).
-    suffixItemID : listViewControl::itemId = uncheckedConvert(listViewControl::itemId,103).
-    execItemID : listViewControl::itemId = uncheckedConvert(listViewControl::itemId,104).
+    cmdArgID_1 : listViewControl::itemId = uncheckedConvert(listViewControl::itemId,101).
+    cmdArgID_2 : listViewControl::itemId = uncheckedConvert(listViewControl::itemId,102).
+    cmdArgID_3 : listViewControl::itemId = uncheckedConvert(listViewControl::itemId,103).
+    cmdArgID_4 : listViewControl::itemId = uncheckedConvert(listViewControl::itemId,104).
 
 clauses
     getSourceFilterList() =
@@ -199,36 +208,35 @@ clauses
         editSource_V = listViewControl::itemId_zero,
         newSourceLocalOptions_V := [],
         !,
+        localExtOptionsList_F := ExtOptionsStr,
         LocalExtOptionsList = toTerm(extOptions, ExtOptionsStr),
-        foreach tuple(ItemID, Name, CmdName, ArgName) in localOptionsList_V do
+        foreach tuple(ItemID, Index, CmdName, _Application, _ArgName) in localOptionsList_V do
             if
-                tuple(_, AttributesList) = list::tryGetMemberEq({(N, tuple(N, _))}, ArgName, LocalExtOptionsList),
-                Value = namedValue::tryGetNamed_string(AttributesList, value_C),
-                AddMode = toBoolean("true" = namedValue::tryGetNamed_string(AttributesList, addMode_C)),
-                FeMode = toBoolean("true" = namedValue::tryGetNamed_string(AttributesList, feMode_C))
+                tuple(_, AttributesList) = list::tryGetMemberEq({(N, tuple(N, _))}, Index, LocalExtOptionsList),
+                AddModeA = toBoolean("true" = namedValue::tryGetNamed_string(AttributesList, addModeA_C)),
+                ArgValue = namedValue::tryGetNamed_string(AttributesList, argument_C),
+                AddModeS = toBoolean("true" = namedValue::tryGetNamed_string(AttributesList, addModeS_C)),
+                SufValue = namedValue::tryGetNamed_string(AttributesList, suffix_C),
+                AppStr = namedValue::getNamedDefault_string(AttributesList, fileName_C, "")
             then
             else
-                Value = "",
-                AddMode = true,
-                if
-                    Ext = filename::getExtension(wSFE_SourceList():tryGetSelectSourceFileName()),
-                    feModeByType(CmdName, ExtName, FEValue),
-                    xml_ExtOptions(ExtName, ExtList, _),
-                    %Ext in ExtList
-                    list::isMemberEq(string::equalIgnoreCase, Ext, ExtList)
-                then
-                    FeMode = FEValue
-                else
-                    FeMode = false
-                end if
+                AddModeA = true,
+                ArgValue = "",
+                AddModeS = true,
+                SufValue = "",
+                AppStr = ""
             end if,
-            panelControl_ctl:updateItem(
-                listViewControl::item(ItemID, Name, 0, [],
-                    [Value,
-                    if AddMode = true then ws_Events():getString(pmnAdd) else ws_Events():getString(pmnReplace) end if,
-                    if FeMode = true then ws_Events():getString(pmnFrontEnd) else ws_Events():getString(pmnBackEnd) end if,
+            panelControl_P:updateItem(
+                listViewControl::item(ItemID, Index, 0, [],
+                    [
+                    CmdName,
+                    AppStr,
+                    if AddModeA = true then ws_Events():getString(pmnAdd) else ws_Events():getString(pmnReplace) end if,
+                    ArgValue,
+                    if AddModeS = true then ws_Events():getString(pmnAdd) else ws_Events():getString(pmnReplace) end if,
+                    SufValue,
                     ""])
-            )
+                )
         end foreach,
         showSourceLocalOptions().
     setLocalExtOptionsList(ExtOptionsList):-
@@ -238,7 +246,6 @@ clauses
     setExtOptionsList(ExtOptionsList):-
         foreach namedValue(ExtName, string(ExtOptionsStr)) in ExtOptionsList do
             retractall(xml_ExtOptions(ExtName, _, _)),
-            retractall(feModeByType(_, ExtName, _)),
             _Xml_Options = extOptionsStr2xml_Options(ExtName, ExtOptionsStr)
         end foreach,
         showSourceLocalOptions().
@@ -254,27 +261,23 @@ clauses
         Xml_Options:indent_P:=true,
         Xml_Options:xmlStandalone_P:=xmlLite::yes,
         ExtGroup = xmlElement::new("", groupNode_C,Xml_Options:root_P),
-%        ExtGroup:name_P := groupNode_C,
         ExtGroup:addAttribute(title_C, "ExtOptions"),
         Xml_Options:root_P:addNode(ExtGroup),
         ExtOptionsList = toTerm(extOptions, ExtOptionsStr),
         foreach tuple(NodeName, AttributesList) in ExtOptionsList do
             CmdNode = xmlElement::new("", NodeName,ExtGroup),
-%            CmdNode:name_P := NodeName,
             ExtGroup:addNode(CmdNode),
             foreach namedValue(AttrName, string(AttrValue)) in AttributesList do
                 CmdNode:addAttribute(AttrName, AttrValue),
                 if NodeName = "common" and AttrName = extName_C then
                     ExtList = splitExtListStr(string::trim(string::toLowerCase(AttrValue))),
                     assert(xml_ExtOptions(ExtName, ExtList, Xml_Options))
-                end if,
-                if AttrName = feMode_C then
-                    assert(feModeByType(NodeName, ExtName, toBoolean("true" = CmdNode:attribute(feMode_C))))
                 end if
             end foreach
-        end foreach.
+        end foreach,
+        !.
 
-predicates
+class predicates
     splitExtListStr : (string ExtListStr) -> string* ExtList.
 clauses
     splitExtListStr(ExtListStr) = [string::trim(Ext)|RestList] :-
@@ -296,6 +299,7 @@ clauses
         edit_ctl:setText(""),
         edit_ctl:setPosition(0, 0),
         edit_ctl:setVisible(false),
+        edit_ctl:setBorder(false),
         edit_ctl:setKeyDownResponder(onEditKeyDown),
         edit_ctl:addNativeMessageHandler(onNative),
         edit_ctl:addLoseFocusListener(onEditLoseFocus),
@@ -309,188 +313,204 @@ clauses
         listButton_ctl:addNativeMessageHandler(onNative),
         listButton_ctl:addLoseFocusListener(onEditLoseFocus),
         listButton_ctl:setCtrlId(listButton_id),
-
-        feListButton_ctl := listButton::new(GroupBox),
-        feListButton_ctl:setPosition(0, 0),
-        feListButton_ctl:setMaxDropDownRows(5),
-        feListButton_ctl:setSort(false),
-        feListButton_ctl:setVisible(false),
-        feListButton_ctl:setKeyDownResponder(onEditKeyDown),
-        feListButton_ctl:addNativeMessageHandler(onNative),
-        feListButton_ctl:addLoseFocusListener(onEditLoseFocus),
-        feListButton_ctl:setCtrlId(feListButton_id),
-
-        panelControl_ctl := listviewcontrol::new(GroupBox),
-        panelControl_ctl:setPosition(4, 4),
-        panelControl_ctl:setSize(50, 50),
-        panelControl_ctl:dockStyle := control::dockFill,
+        panelControl_P := listviewcontrol::new(GroupBox),
+        panelControl_P:setPosition(0, 0),
+        panelControl_P:setSize(50, 50),
+        panelControl_P:dockStyle := control::dockFill,
         columnList_V :=
-            [
-            listViewControl::column(ws_Events():getString(colCmdArgument), 120, alignleft),
-            listViewControl::column(ws_Events():getString(colLocalValue), 150, alignleft),
+                [
+            listViewControl::column("#", 30, alignleft),
+            listViewControl::column(ws_Events():getString(colOpName), 120, alignleft),
+            listViewControl::column(ws_Events():getString(txtApplicationFile), 120, alignleft),
             listViewControl::column(ws_Events():getString(colAddMode), 80, alignleft),
-            listViewControl::column(ws_Events():getString(colWhereMode), 80, alignleft),
+            listViewControl::column(ws_Events():getString(colCmdArgument), 150, alignleft),
+            listViewControl::column(ws_Events():getString(colAddMode), 80, alignleft),
+            listViewControl::column(ws_Events():getString(colLocalSuffix), 150, alignleft),
             listViewControl::column(ws_Events():getString(colResultStr), 600, alignleft)
-            ],
-        panelControl_ctl:insertColumnList(1, columnList_V),
-        panelControl_ctl:setLvType(listViewControl::lvs_report),
-        panelControl_ctl:setLvExStyle(listViewControl::lvs_ex_labeltip),
-        panelControl_ctl:setStyle([listViewControl::lvs_showSelAlways, listViewControl::lvs_autoArrange, listViewControl::lvs_singleSel]),
-        localOptionsList_V :=
-            [
-            tuple(openItemID, ws_Events():getString(rowOpen), sourceEditor_C, argEditor_C),
-            tuple(runItemID, ws_Events():getString(rowRunMode), sourcePerformer_C, argPerformer_C),
-            tuple(rerunItemID, ws_Events():getString(rowReRunMode), sourcePerformer_C, reargPerformer_C),
-            tuple(suffixItemID, ws_Events():getString(rowSuffix), sourcePerformer_C, suffixPerformer_C),
-            tuple(execItemID, ws_Events():getString(rowExecute), sourceExecute_C, argExecute_C)
-            ],
-        addModeListValue_V := [ws_Events():getString(pmnAdd), ws_Events():getString(pmnReplace)],
-        listButton_ctl:addList(addModeListValue_V),
-        feModeListValue_V := [ws_Events():getString(pmnBackEnd), ws_Events():getString(pmnFrontEnd)],
-        feListButton_ctl:addList(feModeListValue_V),
+                ],
+        panelControl_P:insertColumnList(1, columnList_V),
         ws_Events():changeLanguageEvent:addListener(
             {:-
-            listViewControl::column(_, W1, A1) = panelControl_ctl:getColumn(1),
-            panelControl_ctl:setColumn(1, listViewControl::column(ws_Events():getString(colCmdArgument), W1, A1)),
-            listViewControl::column(_, W2, A2) = panelControl_ctl:getColumn(2),
-            panelControl_ctl:setColumn(2, listViewControl::column(ws_Events():getString(colLocalValue), W2, A2)),
-            listViewControl::column(_, W3, A3) = panelControl_ctl:getColumn(3),
-            panelControl_ctl:setColumn(3, listViewControl::column(ws_Events():getString(colAddMode), W3, A3)),
-            listViewControl::column(_, W4, A4) = panelControl_ctl:getColumn(4),
-            panelControl_ctl:setColumn(4, listViewControl::column(ws_Events():getString(colWhereMode), W4, A4)),
-            listViewControl::column(_, W5, A5) = panelControl_ctl:getColumn(5),
-            panelControl_ctl:setColumn(5, listViewControl::column(ws_Events():getString(colResultStr), W5, A5)),
-            addModeListValue_V := [ws_Events():getString(pmnAdd), ws_Events():getString(pmnReplace)],
-            listButton_ctl:clearAll(),
-            listButton_ctl:addList(addModeListValue_V),
-            feModeListValue_V := [ws_Events():getString(pmnBackEnd), ws_Events():getString(pmnFrontEnd)],
-            feListButton_ctl:clearAll(),
-            feListButton_ctl:addList(feModeListValue_V),
-            localOptionsList_V :=
-                [
-                tuple(openItemID, ws_Events():getString(rowOpen), sourceEditor_C, argEditor_C),
-                tuple(runItemID, ws_Events():getString(rowRunMode), sourcePerformer_C, argPerformer_C),
-                tuple(rerunItemID, ws_Events():getString(rowReRunMode), sourcePerformer_C, reargPerformer_C),
-                tuple(suffixItemID, ws_Events():getString(rowSuffix), sourcePerformer_C, suffixPerformer_C),
-                tuple(execItemID, ws_Events():getString(rowExecute), sourceExecute_C, argExecute_C)
-                ]
+             if panelControl_P:isShown then
+                column(_, W2, A2) = panelControl_P:getColumn(2),
+                panelControl_P:setColumn(2, column(ws_Events():getString(colOpName), W2, A2)),
+                column(_, W3, A3) = panelControl_P:getColumn(3),
+                panelControl_P:setColumn(3, column(ws_Events():getString(txtApplicationFile), W3, A3)),
+                column(_, W4, A4) = panelControl_P:getColumn(4),
+                panelControl_P:setColumn(4, column(ws_Events():getString(colAddMode), W4, A4)),
+                column(_, W5, A5) = panelControl_P:getColumn(5),
+                panelControl_P:setColumn(5, column(ws_Events():getString(colCmdArgument), W5, A5)),
+                column(_, W6, A6) = panelControl_P:getColumn(6),
+                panelControl_P:setColumn(6, column(ws_Events():getString(txtApplicationFile), W6, A6)),
+                column(_, W7, A7) = panelControl_P:getColumn(7),
+                panelControl_P:setColumn(7, column(ws_Events():getString(colAddMode), W7, A7)),
+                column(_, W8, A8) = panelControl_P:getColumn(8),
+                panelControl_P:setColumn(8, column(ws_Events():getString(colCmdArgument), W8, A8))
+            end if
             }),
-        ListViewItems =
-            [ listViewControl::item(ItemID, Name, 0, [], ["", ws_Events():getString(pmnAdd), ws_Events():getString(pmnBackEnd), ""])
-            ||
-                tuple(ItemID, Name, _CmdName, _) = list::getMember_nd(localOptionsList_V)
+        panelControl_P:setLvType(listViewControl::lvs_report),
+        panelControl_P:setLvExStyle(listViewControl::lvs_ex_labeltip + listViewControl::lvs_ex_gridLines),
+        panelControl_P:setStyle([listViewControl::lvs_showSelAlways, listViewControl::lvs_autoArrange, listViewControl::lvs_singleSel]),
+        localOptionsList_V :=
+            [
+            tuple(cmdArgID_1, "1", "", "", argument_C),
+            tuple(cmdArgID_2, "2", "", "", argument_C),
+            tuple(cmdArgID_3, "3", "", "", argument_C),
+            tuple(cmdArgID_4, "4", "", "", argument_C)
             ],
-       panelControl_ctl:insertItemList(ListViewItems),
-       panelControl_ctl:addMouseClickListener(onListViewControlMouseClick).
+        ListViewItems =
+            [ listViewControl::item(ItemID, Name, 0, [], [CmdName, "", ws_Events():getString(pmnAdd), "", ws_Events():getString(pmnAdd), "", ""])
+            ||
+                tuple(ItemID, Name, CmdName, _, _) = list::getMember_nd(localOptionsList_V)
+            ],
+        panelControl_P:insertItemList(ListViewItems),
+        addModeListValue_V := [ws_Events():getString(pmnAdd), ws_Events():getString(pmnReplace)],
+        listButton_ctl:addList(addModeListValue_V),
+        panelControl_P:addMouseClickListener(onListViewControlMouseClick).
 
 clauses
     showSourceLocalOptions():-
         FileName = wSFE_SourceList():tryGetSelectSourceFileName(),
         xml_ExtOptions(_ExtName, ExtList, Xml_Options),
         list::isMemberEq(string::equalIgnoreCase, filename::getExtension(FileName), ExtList),
-%        filename::getExtension(FileName) in ExtList,
         !,
-        foreach tuple(ItemID, _Name, CmdName, ArgName) in localOptionsList_V do
-            setLocalOptionsRow(ItemID, Xml_Options, CmdName, ArgName)
+        SelectExt = filename::getExtension(FileName),
+        if prevSelectExt <> SelectExt then
+            updateCommandRibbon(Xml_Options)
+        end if,
+        prevSelectExt := SelectExt,
+        foreach tuple(ItemID, Index, _CmdName, _Application, ArgName) in localOptionsList_V do
+            setLocalOptionsRow(ItemID, Xml_Options, Index, ArgName)
         end foreach.
     showSourceLocalOptions().
 
-predicates
-    setLocalOptionsRow: (listViewControl::itemId ItemID,xmlDocument Xml_Options,string CmdName,string ArgName).
 clauses
-    setLocalOptionsRow(ItemID, Xml_Options, CmdName, _ArgName):-
-        Node = Xml_Options:getNode_nd([root(), child(groupNode_C, { (_) }), child(CmdName, { (_) })]),
+    tryGetStatusCheck(Index, FileName, AllPossible) = StatusCheck :-
+        xml_ExtOptions(_ExtName, ExtList, Xml_Options),
+        list::isMemberEq(string::equalIgnoreCase, filename::getExtension(FileName), ExtList),
+        Node = Xml_Options:getNode_nd([root(), child(groupNode_C, { (_) }), child(command_C, { (CN) :- toString(Index) = CN:attribute(index_C) })]),
         !,
-        if CmdName = sourceEditor_C then
-            FirstArg = if FN = Node:attribute(fileName_C) then FN else "" end if,
-            SecondArg = getArgumentStr(ItemID, Node, argEditor_C),
-            if FirstArg = "" then
-                ResultString = ws_Events():getString(noRuleStatus_C)
+        StatusCheck = toBoolean("true" = Node:attribute(checkStatus_C)),
+        AllPossible = toBoolean("true" = Node:attribute(allPossible_C)).
+
+predicates
+    updateCommandRibbon : (xmlDocument Xml_Options).
+clauses
+    updateCommandRibbon(Xml_Options):-
+        foreach Index = std::cIterate(commandMax)+1 do
+            if Node = Xml_Options:getNode_nd([root(), child(groupNode_C, { (_) }), child(command_C, { (CN) :- toString(Index) = CN:attribute(index_C) })]),
+                CmdName = Node:attribute(name_C)
+            then
+                wsFE_Command_P:updateCommandRibbon(Index, CmdName, true)
             else
-                ResultString = string::format(@{% % "$(SourceFile)"}, FirstArg, SecondArg)
+                wsFE_Command_P:updateCommandRibbon(Index, "not assigned", false)
             end if
-        elseif CmdName = sourcePerformer_C then
-            FirstArg = if FN = Node:attribute(fileName_C) then FN else "" end if,
-            if ItemID = suffixItemID then % It's "Run suffix"
-                SecondArg = getArgumentStr(runItemID, Node, argPerformer_C),
-                ThreeArg = getArgumentStr(ItemID, Node, suffixPerformer_C)
-            else
-                SecondArg = getArgumentStr(ItemID, Node, if ItemID = runItemID then argPerformer_C else reargPerformer_C end if),
-                ThreeArg = getArgumentStr(suffixItemID, Node, suffixPerformer_C)
-            end if,
-            if FirstArg = "" then
-                ResultString = ws_Events():getString(noRuleStatus_C)
-            else
-                ResultString = string::format(@{% % "$(SourceFile)" %}, FirstArg, SecondArg, ThreeArg)
-            end if
-        elseif CmdName = sourceExecute_C then
-            FirstArg = if FN = Node:attribute(cmdExecute_C) then FN else "" end if,
-            SecondArg = getArgumentStr(ItemID, Node, argExecute_C),
-            if "true" = Node:attribute(execOn_C) then
-                ResultString = string::format(@{% %}, FirstArg, SecondArg)
-            else
-                ResultString = ws_Events():getString(txtExecCmdDisabled)
-            end if
-        else
-            ResultString = ""
+        end foreach,
+        ribbonControl_ctl:invalidate().
+
+predicates
+    setLocalOptionsRow: (listViewControl::itemId ItemID,xmlDocument Xml_Options,string Index,string ArgName).
+clauses
+    setLocalOptionsRow(ItemID, Xml_Options, Index, _ArgName):-
+        Node = Xml_Options:getNode_nd([root(), child(groupNode_C, { (_) }), child(command_C, { (CN) :- Index = CN:attribute(index_C) })]),
+        if CmdName = Node:attribute(name_C) then
+            panelControl_P:updateTextSubItem(ItemID, 0, CmdName)
         end if,
-        panelControl_ctl:updateTextSubItem(ItemID, 3, ResultString).
+        FC = Node:attribute(formatCmd_C),
+        !,
+        ApplicationStr = getApplicationStr(ItemID, Node),
+        FC1 = string::replaceAll(FC, "[Application]", ApplicationStr),
+        SecondArg = getArgumentStr(ItemID, Node),
+        FC2 = string::replaceAll(FC1, "[Arguments]", SecondArg),
+        SuffixArg = getSuffixStr(ItemID, Node),
+        ResultString = string::replaceAll(FC2, "[Suffix]", SuffixArg),
+        panelControl_P:updateTextSubItem(ItemID, 6, ResultString).
     setLocalOptionsRow(_ItemID, _Xml_Options, _CmdName, _ArgName).
 
 predicates
-    getArgumentStr : (listViewControl::itemId ItemID,xmlElement Node,string ArgName) -> string ArgumentStr.
+    getApplicationStr : (listViewControl::itemId ItemID,xmlElement Node) -> string ApplicationStr.
 clauses
-    getArgumentStr(ItemID, Node, ArgName) = ArgumentStr :-
-        listViewControl::item(ItemID, _, _, _, [LocalOptions, AddMode, _, _]) == panelControl_ctl:getItem(ItemID),
-        if AddMode = ws_Events():getString(pmnAdd) then
-            ArgumentStr = if SN = Node:attribute(ArgName) then string::concat(SN," ",LocalOptions) else LocalOptions end if
+    getApplicationStr(ItemID, Node) = ApplicationStr :-
+        listViewControl::item(ItemID, _, _, _, [_, AppStr, _, _, _, _,  _]) == panelControl_P:getItem(ItemID),
+        ApplicationStr = if AppStr <> "" then AppStr elseif FN = Node:attribute(fileName_C) then FN else "" end if.
+
+predicates
+    getArgumentStr : (listViewControl::itemId ItemID,xmlElement Node) -> string ArgumentStr.
+clauses
+    getArgumentStr(ItemID, Node) = ArgumentStr :-
+        listViewControl::item(ItemID, _, _, _, [_, _, AddModeA, LocalOptions, _, _,  _]) == panelControl_P:getItem(ItemID),
+        if AddModeA = ws_Events():getString(pmnAdd) then
+            ArgumentStr = if SN = Node:attribute(argument_C) then string::concat(SN," ",LocalOptions) else LocalOptions end if
         else
             ArgumentStr = LocalOptions
+        end if.
+
+predicates
+    getSuffixStr : (listViewControl::itemId ItemID,xmlElement Node) -> string SuffixStr.
+clauses
+    getSuffixStr(ItemID, Node) = SuffixStr :-
+        listViewControl::item(ItemID, _, _, _, [_, _, _, _, AddModeS, LocalSuffix, _]) == panelControl_P:getItem(ItemID),
+        if AddModeS = ws_Events():getString(pmnAdd) then
+            SuffixStr = if SN = Node:attribute(suffix_C) then string::concat(SN," ",LocalSuffix) else LocalSuffix end if
+        else
+            SuffixStr = LocalSuffix
         end if.
 
 predicates
     onListViewControlMouseClick : listViewControl::mouseClickListener.
 clauses
     onListViewControlMouseClick(Source, PNT):-
-        ItemID = list::getMember_nd(panelControl_ctl:getAll()),
+        ItemID = list::getMember_nd(panelControl_P:getAll()),
         RCT = Source:getItemRect(ItemID, listViewControl::bounds),
         listViewControl::column(_,  Width1, _) = Source:getColumn(1),
         listViewControl::column(_,  Width2, _) = Source:getColumn(2),
         listViewControl::column(_,  Width3, _) = Source:getColumn(3),
         listViewControl::column(_,  Width4, _) = Source:getColumn(4),
+        listViewControl::column(_,  Width5, _) = Source:getColumn(5),
+        listViewControl::column(_,  Width6, _) = Source:getColumn(6),
+        listViewControl::column(_,  Width7, _) = Source:getColumn(7),
         RCT = rct(L,T,_,B),
-        RCTColumn2 = rct(L+Width1,T,L+Width1+Width2,B),
         RCTColumn3 = rct(L+Width1+Width2,T,L+Width1+Width2+Width3,B),
         RCTColumn4 = rct(L+Width1+Width2+Width3,T,L+Width1+Width2+Width3+Width4,B),
-        if gui::rectPntInside(RCTColumn2, PNT) then
-            ColNumber = edit_id,
-            EditRCT = RCTColumn2,
-            EditCtrl = convert(control,edit_ctl)
-        elseif gui::rectPntInside(RCTColumn3, PNT) then
-            ColNumber = listbutton_id,
+        RCTColumn5 = rct(L+Width1+Width2+Width3+Width4,T,L+Width1+Width2+Width3+Width4+Width5,B),
+        RCTColumn6 = rct(L+Width1+Width2+Width3+Width4+Width5,T,L+Width1+Width2+Width3+Width4+Width5+Width6,B),
+        RCTColumn7 = rct(L+Width1+Width2+Width3+Width4+Width5+Width6,T,L+Width1+Width2+Width3+Width4+Width5+Width6+Width7,B),
+        if gui::rectPntInside(RCTColumn3, PNT) then
+            ColNumber = appEdit_id,
             EditRCT = RCTColumn3,
-            EditCtrl = convert(control,listbutton_ctl)
+            EditCtrl = convert(control,edit_ctl)
         elseif gui::rectPntInside(RCTColumn4, PNT) then
-            ColNumber = feListButton_id,
+            ColNumber = listbutton_id,
             EditRCT = RCTColumn4,
-            EditCtrl = convert(control,feListButton_ctl)
+            EditCtrl = convert(control,listbutton_ctl)
+        elseif gui::rectPntInside(RCTColumn5, PNT) then
+            ColNumber = edit_id,
+            EditRCT = RCTColumn5,
+            EditCtrl = convert(control,edit_ctl)
+        elseif gui::rectPntInside(RCTColumn6, PNT) then
+            ColNumber = listbutton_id + 2,
+            EditRCT = RCTColumn6,
+            EditCtrl = convert(control,listbutton_ctl)
+        elseif gui::rectPntInside(RCTColumn7, PNT) then
+            ColNumber = edit_id + 2,
+            EditRCT = RCTColumn7,
+            EditCtrl = convert(control,edit_ctl)
         else
             fail
         end if,
         Source:tryGetItemIndex(ItemId) = ItemIndex,
         Source:getItemColumnText(ItemIndex, ColNumber) = Text,
         Source:select([ItemId], true),
-        EditCtrl:setRect(This:rectPixel2Unit(EditRCT)),
-        if ColNumber = edit_id then
+        EditCtrl:setOuterRect(EditRCT),
+        if ColNumber in [appEdit_id, edit_id, edit_id + 2] then
             edit_ctl:setText(Text)
-        elseif ColNumber = listbutton_id then
+        elseif ColNumber in [listbutton_id, listbutton_id + 2] then
             listbutton_ctl:selectAt(list::tryGetIndex(Text, addModeListValue_V), true)
-        else
-            feListButton_ctl:selectAt(list::tryGetIndex(Text, feModeListValue_V), true)
         end if,
         [SourceID] = wSFE_SourceList():sourceList_P:getSel(),
         !,
         editSource_V := SourceID,
+        currentEditColumn_V := ColNumber,
         EditCtrl:setVisible(true),
         EditCtrl:bringToTop(),
         EditCtrl:setFocus().
@@ -501,7 +521,7 @@ class predicates
 clauses
     dlgc_translate(Code) = gui_api::mkR(bit::bitOr(gui_api::getUnsigned(Code), gui_native::dlgc_wantallkeys)).
 
-predicates
+class predicates
     onNative : window::nativeMessageHandler.
 clauses
     onNative(Source, gui_native::wm_getdlgcode, WParam, LParam) = window::nativeResult(dlgc_translate(Ret)) :-
@@ -516,20 +536,14 @@ clauses
         Key in [vpiDomains::k_esc,vpiDomains::k_enter],
         Source:setVisible(false),
         if Key = vpiDomains::k_enter then
-            [ItemID] = panelControl_ctl:getSel(),
-            if convert(control,Source):getCtrlId() = feListButton_id and ItemID in [runItemID, rerunItemID, suffixItemID] then
-                panelControl_ctl:updateTextSubItem(runItemID, convert(control,Source):getCtrlId()-2, Source:getText()),
-                panelControl_ctl:updateTextSubItem(rerunItemID, convert(control,Source):getCtrlId()-2, Source:getText()),
-                panelControl_ctl:updateTextSubItem(suffixItemID, convert(control,Source):getCtrlId()-2, Source:getText())
-            else
-                panelControl_ctl:updateTextSubItem(ItemID, convert(control,Source):getCtrlId()-2, Source:getText())
-            end if,
+            [ItemID] = panelControl_P:getSel(),
+            panelControl_P:updateTextSubItem(ItemID, currentEditColumn_V - 2, Source:getText()),
             updateLocalOptions(),
             if newSourceLocalOptions_V <> [] then
                 setLocalExtOptionsList(newSourceLocalOptions_V)
             else
                 showSourceLocalOptions(),
-                panelControl_ctl:setFocus()
+                panelControl_P:setFocus()
             end if
         end if,
         !.
@@ -551,19 +565,32 @@ predicates
     updateLocalOptions : ().
 clauses
     updateLocalOptions():-
-        LocalOptionsList = [tuple(ArgName, [namedValue(value_C, string(Value)), namedValue(addMode_C, string(toString(AddMode))), namedValue(feMode_C, string(toString(FeMode)))]) ||
-            tuple(ItemID, _Name, _CmdName, ArgName) in localOptionsList_V,
-            panelControl_ctl:tryGetItemIndex(ItemId) = ItemIndex,
-            Value = panelControl_ctl:getItemColumnText(ItemIndex, edit_id),
-            AddMode = toBoolean(ws_Events():getString(pmnAdd) = panelControl_ctl:getItemColumnText(ItemIndex, listButton_id)),
-            FeMode = toBoolean(ws_Events():getString(pmnFrontEnd) = panelControl_ctl:getItemColumnText(ItemIndex, feListButton_id))
+        LocalOptionsList = [tuple(Index,
+                [namedValue(addModeA_C, string(toString(AddModeA))), namedValue(argument_C, string(Arguments)),
+                 namedValue(addModeS_C, string(toString(AddModeS))), namedValue(suffix_C, string(Suffix)),
+                 namedValue(fileName_C, string(AppStr))]) ||
+            tuple(ItemID, Index, _CmdName, _Application, _ArgName) in localOptionsList_V,
+            panelControl_P:tryGetItemIndex(ItemId) = ItemIndex,
+            AppStr = panelControl_P:getItemColumnText(ItemIndex, appEdit_id),
+            AddModeA = toBoolean(ws_Events():getString(pmnAdd) = panelControl_P:getItemColumnText(ItemIndex, listButton_id)),
+            Arguments = panelControl_P:getItemColumnText(ItemIndex, edit_id),
+            AddModeS = toBoolean(ws_Events():getString(pmnAdd) = panelControl_P:getItemColumnText(ItemIndex, listButton_id+2)),
+            Suffix = panelControl_P:getItemColumnText(ItemIndex, edit_id+2)
             ],
         wsFE_Tasks():saveLocalOptions([namedValue(toString(editSource_V), string(toString(LocalOptionsList)))]),
         editSource_V := listViewControl::itemId_zero.
 
 clauses
-    showLocalOptionsPanel():-
-        showLocalOptionsPanel(toBoolean(0 = localOptionsPanel_P:getHeight())).
+    showLocalOptionsDialog():-
+        wsFE_Tasks():showLocalOptions().
+
+    showLocalOptionsDialog(VirtualDirList):-
+        FileName = wSFE_SourceList():tryGetSelectSourceFileName(),
+        xml_ExtOptions(_ExtName, ExtList, Xml_Options),
+        list::isMemberEq(string::equalIgnoreCase, filename::getExtension(FileName), ExtList),
+        !,
+        _ = localOptions::display(This, wsFE_P, localExtOptionsList_F, FileName, Xml_Options, VirtualDirList).
+    showLocalOptionsDialog(_).
 
     showLocalOptionsPanel(IsShown):-
         if IsShown = true then
@@ -666,29 +693,21 @@ predicates
     forgetObjects:().
 clauses
     forgetObjects():-
-        wsFE_Command_P :=erroneous,
-        progress :=erroneous,
-
-        localOptionsPanel_P :=erroneous,
-        panelControl_ctl :=erroneous,
-        edit_ctl :=erroneous,
-        listButton_ctl:=erroneous,
-        feListButton_ctl:=erroneous,
-        editSource_V:=listViewControl::itemId_zero,
-        newSourceLocalOptions_V:=erroneous,
-
-%        xml_ExtOptions:=erroneous,
-%        filterMenuCommand:=erroneous,
-%        feModeByType :=erroneous,
-
-        addModeListValue_V :=erroneous,
-        feModeListValue_V :=erroneous,
-        columnList_V :=erroneous,
-        localOptionsList_V :=erroneous,
-        ribbonControl_ctl :=erroneous,
-        statusBarControl :=erroneous,
-        progressBar :=erroneous,
-        selectNode_V :=erroneous,
+        wsFE_Command_P := erroneous,
+        progress := erroneous,
+        localOptionsPanel_P := erroneous,
+        panelControl_P := erroneous,
+        edit_ctl := erroneous,
+        listButton_ctl := erroneous,
+        editSource_V := listViewControl::itemId_zero,
+        newSourceLocalOptions_V := erroneous,
+        addModeListValue_V := erroneous,
+        columnList_V := erroneous,
+        localOptionsList_V := erroneous,
+        ribbonControl_ctl := erroneous,
+        statusBarControl := erroneous,
+        progressBar := erroneous,
+        selectNode_V := erroneous,
         succeed().
 
 predicates
@@ -699,7 +718,8 @@ clauses
                 gui_api::mkW(listViewControl::lvs_ex_labelTip), gui_api::mkL(listViewControl::lvs_ex_labelTip)).
 
 
-% This code is maintained automatically, do not update it manually. 00:17:58-20.1.2017
+% This code is maintained automatically, do not update it manually.
+%  12:26:08-19.10.2018
 
 facts
     ribbonControl_ctl : ribboncontrol.
@@ -708,9 +728,8 @@ predicates
     generatedInitialize : ().
 clauses
     generatedInitialize() :-
-        setFont(vpi::fontCreateByName("Tahoma", 8)),
         setText("WorkSpaceForm"),
-        setRect(rct(100, 100, 592, 341)),
+        setRect(rct(100, 100, 800, 500)),
         setDecoration(titlebar([closeButton, maximizeButton, minimizeButton])),
         setBorder(sizeBorder()),
         setState([wsf_ClipSiblings, wsf_ClipChildren]),

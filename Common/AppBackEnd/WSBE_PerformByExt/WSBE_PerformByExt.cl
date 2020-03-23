@@ -5,6 +5,6 @@ class wSBE_PerformByExt : wSBE_PerformByExt
 
 constructors
 %    new:(string CurrentBinDir,string RunMode,string FileName).
-    new:(wsBE_Performer Parent,string FileName,xmlElement SourceObj).
+    new:(wsBE_Performer Parent,string BuildType,string FileName,xmlElement SourceObj).
 
 end class wSBE_PerformByExt

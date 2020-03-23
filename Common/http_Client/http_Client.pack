@@ -2,8 +2,6 @@
 
 % privately used packages
 #include @"Packs\Logic\trace\trace.ph"
-%#include @"Packs\Logic\Web\VipRpc\xmlHttpSink\xmlHttpSink.ph"
-#include @"Packs\Logic\Web\xmlHttpEventSink\xmlHttpEventSink.ph"
 #include @"WS_manager\Common\WS_EventManager\WS_EventManager.ph"
 #include @"pfc\web\http\http.ph"
 

@@ -4,6 +4,8 @@
 #include @"ws_manager\common\AppFrontEnd\WSFE_Form\WSFE_Form.ph"
 
 % privately used packages
+#include @"WS_manager\Common\AppFrontEnd\WSFE_WinUI\WSFE_Settings\WSFE_Settings.ph"
+#include @"pfc\std\std.ph"
 #include @"pfc\log\Log.ph"
 #include @"WorkSpaceManager\WorkSpaceManager.ph"
 #include @"pfc\gui\commands\checkCommand\checkCommand.ph"
@@ -11,7 +13,6 @@
 #include @"pfc\gui\controls\groupBox\groupBox.ph"
 #include @"ws_manager\common\AppFrontEnd\WSFE_Command\WSFE_Command.ph"
 #include @"ws_manager\common\AppFrontEnd\WSFE_SourceTree\WSFE_SourceTree.ph"
-#include @"ws_manager\common\AppFrontEnd\WSBE_Messages\WSBE_Messages.ph"
 #include @"ws_manager\common\AppFrontEnd\WSFE_Connector\WSFE_Connector.ph"
 #include @"packs\gui\FormSplittedLayout\FormSplittedLayout.ph"
 #include @"pfc\gui\controls\splitterControl\splitterControl.ph"

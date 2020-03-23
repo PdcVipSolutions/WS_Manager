@@ -63,6 +63,12 @@ clauses
         exception::raise_User(string::format("Component % not Registered!",wsFE_SourceList_C)).
 
 clauses
+    wsFE_Images() = convert(wsFE_Images,ImageList):-
+        ImageList = wsFE_P:entityRegistry_P:getEntityByName_nd(wsFE_Images_C),!.
+    wsFE_Images()=_:-
+        exception::raise_User(string::format("Component % not Registered!",wsFE_Images_C)).
+
+clauses
     ws_Events()=wsFE_P:eventManager_P.
 
 end implement wsFE_Connector

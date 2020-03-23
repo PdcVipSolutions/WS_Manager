@@ -7,7 +7,6 @@ interface workSpaceCommand
 predicates
     initWS_Menu:(window Win)->ribbonControl::block.
     initWSTree_Menu:(window Win)->ribbonControl::block.
-%    initWSMoveNode_Menu:(window Win)->ribbonControl::block.
     addChangeListener:().
 
 end interface workSpaceCommand

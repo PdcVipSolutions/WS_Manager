@@ -14,9 +14,11 @@
 #include @"pfc\gui\gui.ph"
 
 % exported interfaces
+%#include @"WS_manager\Common\AppFrontEnd\WSFE_Form\appEditControl.i"
 #include @"ws_manager\common\AppFrontEnd\WSFE_Form\WSFE_Form.i"
 
 % exported classes
+%#include @"WS_manager\Common\AppFrontEnd\WSFE_Form\appEditControl.cl"
 #include @"ws_manager\common\AppFrontEnd\WSFE_Form\WSFE_Form.cl"
 
 

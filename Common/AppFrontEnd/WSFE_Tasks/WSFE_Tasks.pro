@@ -2,7 +2,7 @@
 
 implement wsFE_Tasks
     inherits wsFE_Connector
-    open core, vpiDomains, ws_eventManager, xmlNavigate, pfc\log\
+    open core, vpiDomains, ws_eventManager, pfc\log\
 
 facts
     sourceIsRunning_P:boolean:=false.
@@ -10,7 +10,6 @@ facts
     runDone_V:integer := 0.
     runFailed_V:integer := 0.
     runNoPath_V:integer := 0.
-    runNoRule_V:integer := 0.
 
     runMode_V:string := run_C.
     stopRun_V : boolean := false.
@@ -21,6 +20,7 @@ facts
     filterSourceList : string* := [].
     nameChecked : string* := [].
     ribbonResetStatus : boolean := true.
+    wsvUpdateResponder_P : predicate{namedValue*} := erroneous.
 
 clauses
     new(FrontEnd):-
@@ -50,7 +50,7 @@ clauses
         elseif nodeIDList_C = Name then
             Value = toString(wsFE_Form():selectNode_V)
         elseif ribbonLayout_C = Name then
-            Value = toString(wsFE_Form():ribbonControl_ctl:layout)
+            Value = toString(wsFE_Form():ribbonControl_P:layout)
         elseif ribbonState_C = Name then
             StateList = getRibbonStateList(),
             Value = toString(StateList)
@@ -73,7 +73,7 @@ clauses
     getRibbonStateList() =
         [
         namedValue("reset", boolean(ribbonResetStatus)),
-        namedValue("local", boolean(toBoolean(0 <> wsFE_Form():localOptionsPanel_P:getHeight())))
+        namedValue("local", boolean(false))
         ].
 
 clauses
@@ -82,6 +82,17 @@ clauses
 
 clauses
     feFormShow().
+
+constants
+    vpDirToolsKey = @"Software\Prolog Development Center\Visual Prolog6\settings\toolsDirList".
+clauses
+    loadVipVirtualDir():-
+        try
+            DirToolsList = registry::getAllValues(registry::currentUser, vpDirToolsKey)
+        catch _ do
+            DirToolsList = []
+        end try,
+        notify(methodRequest, frontEndVipVirtualDir_C, DirToolsList).
 
 clauses
     newWorkSpace():-
@@ -161,6 +172,7 @@ facts - lastFolder_FB
     source_LastFolder_V:string := currentDirectory_V.
     folder_LastFolder_V:string := currentDirectory_V.
     workSpace_LastOpenedFile_V:string := erroneous.
+    initFileMask : string := "".
 
 clauses
     setFrontEndOptions(FEOptionsList):-
@@ -176,7 +188,8 @@ clauses
             elseif nodeIDList_C =Name then
                 wsFE_Form():selectNode_V := toTerm(namedValue_list, Value)
             elseif ribbonLayout_C =Name then
-                wsFE_Form():ribbonControl_ctl:layout := toTerm(ribbonControl::layout, Value)
+                wsFE_Form():ribbonControl_P:layout := toTerm(ribbonControl::layout, Value),
+                wsFE_Form():wsFE_Command_P:predefinedLayout_V := wsFE_Form():ribbonControl_P:layout
             elseif ribbonState_C =Name then
                 wsFE_Form():wsFE_Command_P:restoreRibbonState(toTerm(namedValue_list, Value))
             elseif checkedFilter_C =Name then
@@ -228,7 +241,7 @@ clauses
 
 clauses
     tryRemoveNode(NodePath):-
-        idc_ok = vpiCommonDialogs::messageBox(ws_Events():getString(removeDlgTitle_C), ws_Events():getString(removeDlgText_C),
+        idc_ok = vpiCommonDialogs::messageBox(ws_Events():getString(removeDlgTitle_C), ws_Events():getString( removeDlgText_C),
             mesbox_iconQuestion,mesbox_buttonsYesNo,mesbox_defaultFirst,mesbox_suspendApplication),
         log::write(log::info,"Yes, Remove\n"),
         notify(methodRequest,removeNode_C,NodePath).
@@ -264,13 +277,12 @@ clauses
         runDone_V := 0,
         runFailed_V := 0,
         runNoPath_V := 0,
-        runNoRule_V := 0,
 
         notify(methodRequestChain,getNodeContent_C,NodePath).
 
 clauses
     updateNodeContent(NodePath):-
-        notify(methodRequestChain,updateNodeContent_C,NodePath).
+        notify(methodRequestChain,updateNodeContent_C,[namedValue("filter",string(if showAllFilter = true then "all" else toString(filterSourceList) end if))|NodePath]).
 
 clauses
     tryAddSource(SourceParams, IsSelect):-
@@ -278,6 +290,7 @@ clauses
         ObjID = namedValue::tryGetNamed_string(SourceParams,xmlObj_C),
         SPathStr = namedValue::tryGetNamed_string(SourceParams,nodeIDList_C),
         File=namedValue::tryGetNamed_string(SourceParams,fileName_C),
+        FullFile=namedValue::tryGetNamed_string(SourceParams,"fullFileName"),
         Ext=string::toLowerCase(fileName::getExtension(File,_Name)),
         if showAllFilter = true or Ext in filterSourceList then
             if string::hasPrefixIgnoreCase(File, "$(", _),
@@ -288,7 +301,7 @@ clauses
                 File1 = File
             end if,
             filename::getPathAndName(File1, Path, Name),
-            IconID=getIconID(false,Ext),
+            IconID = getIconID(FullFile),
             !,
             if Errors=namedValue::tryGetNamed_String(SourceParams,errors_C) then succeed() else Errors="0" end if,
             if Warnings=namedValue::tryGetNamed_String(SourceParams,warnings_C) then succeed() else Warnings="0" end if,
@@ -316,34 +329,19 @@ clauses
                 runFailed_V := runFailed_V + 1
             elseif Status = ws_Events():getString(noPathStatus_C) then
                 runNoPath_V := runNoPath_V + 1
-            elseif Status = ws_Events():getString(noRuleStatus_C) then
-                runNoRule_V := runNoRule_V + 1
             end if,
-            wsFE_Form():progress(3, string::format("%: %d/%d (D: %d, F: %d, NP: %d, NR: %d)",
-                                                                            ws_Events():getString(totalReady_C),
-                                                                            runDone_V + runFailed_V + runNoPath_V + runNoRule_V,
-                                                                            TotalItems,
-                                                                            runDone_V, runFailed_V, runNoPath_V, runNoRule_V)),
-            wsFE_Form():progress(1, "")
+            wsFE_Form():progress(3, string::format("%: %d/%d (D: %d, F: %d, NF: %d)",
+                                                                    ws_Events():getString(totalReady_C),
+                                                                    runDone_V + runFailed_V + runNoPath_V,
+                                                                    TotalItems,
+                                                                    runDone_V, runFailed_V, runNoPath_V)),
+            wsFE_Form(): progress(1, "")
         end if.
 
 predicates
-    getIconID:(boolean TrueIfFolder,string Ext)->integer IconID.
+    getIconID : (string SourceFile) ->  integer IconID.
 clauses
-    getIconID(true,"vipprj")=wSFE_SourceList():vip_bw_P:-!.
-    getIconID(false,"vipprj")=wSFE_SourceList():vip_P:-!.
-
-    getIconID(true,"cmd")=wSFE_SourceList():txt_light_P:-!.
-    getIconID(false,"cmd")=wSFE_SourceList():txt_P:-!.
-
-    getIconID(true,"pzl")=wSFE_SourceList():pzl_wt_P:-!.
-    getIconID(false,"pzl")=wSFE_SourceList():pzl_bk_P:-!.
-
-    getIconID(true,_)=wSFE_SourceList():txt_light_P:-!.
-    getIconID(false,_)=wSFE_SourceList():txt_P:-!.
-
-%    getIconID(_Any,_AnyExt)=_:-
-%        exception::raise_User("Unexpected Alternative").
+    getIconID(SourceFile) = wsFE_Images():getSourceImageIdx(SourceFile).
 
 clauses
     addSource():-
@@ -363,52 +361,59 @@ predicates
 clauses
     tryGetSourceFile(MaskList)=WS_SourceFileName:-
         currentDirectory_V:=directory::getCurrentDirectory(),
+        InitFileMask =
+            if
+                initFileMask <> "",
+                IM = list::tryGetMemberEq({(IFM, MaskStr) :- _ = string::search(MaskStr, IFM, string::caseInsensitive)}, initFileMask, MaskList)
+            then IM else initFileMask end if,
         WS_SourceFileName = vpiCommonDialogs::getFileName
-            (
-            "",
-                MaskList,
-                "Source File", [dlgfn_filemustexist], source_LastFolder_V, _SelectedFiles),
+            (InitFileMask,
+             MaskList,
+             "Source File", [dlgfn_filemustexist], source_LastFolder_V, _SelectedFiles),
         directory::setCurrentDirectory(currentDirectory_V),
-        source_LastFolder_V:=fileName::getPath(WS_SourceFileName).
+        initFileMask := string::concat("*.", filename::getExtension(WS_SourceFileName)),
+        source_LastFolder_V := fileName::getPath(WS_SourceFileName).
 
 clauses
     removeSource():-
-        tuple(NodePath,_ObjPAth)=wsFE_SourceTree():tryGetSelectedNodePath(),
-        ListSelected=wsFE_SourceList():sourceList_P:getSel(),
-        [] <> ListSelected,
-        !,
-        ListSelectedStr=[toString(NodeID)||NodeID in ListSelected,
-            ItemIndex = wsFE_SourceList():sourceList_P:tryGetItemIndex(NodeID),
-            Status = wsFE_SourceList():sourceList_P:getItemColumnText(ItemIndex, 5),
-            if Status = ws_Events():getString(doneStatus_C) then
-                runDone_V := runDone_V - 1
-            elseif Status = ws_Events():getString(failedStatus_C) then
-                runFailed_V := runFailed_V - 1
-            elseif Status = ws_Events():getString(noPathStatus_C) then
-                runNoPath_V := runNoPath_V - 1
-            elseif Status = ws_Events():getString(noRuleStatus_C) then
-                runNoRule_V := runNoRule_V - 1
+        if
+            tuple(NodePath,_ObjPAth)=wsFE_SourceTree():tryGetSelectedNodePath(),
+            ListSelected = wsFE_SourceList():sourceList_P:getSel(),
+            Count = list::length(ListSelected),
+            Count > 0,
+            idc_ok = vpiCommonDialogs::messageBox(ws_Events():getString(removeDlgTitle_C), ws_Events():getString(removeSrcDlgText_C),
+                mesbox_iconQuestion,mesbox_buttonsYesNo,mesbox_defaultFirst,mesbox_suspendApplication)
+        then
+            ListSelectedStr=[toString(NodeID)||NodeID in ListSelected,
+                ItemIndex = wsFE_SourceList():sourceList_P:tryGetItemIndex(NodeID),
+                Status = wsFE_SourceList():sourceList_P:getItemColumnText(ItemIndex, 3),
+                if Status = ws_Events():getString(doneStatus_C) then
+                    runDone_V := runDone_V - 1
+                elseif Status = ws_Events():getString(failedStatus_C) then
+                    runFailed_V := runFailed_V - 1
+                elseif Status = ws_Events():getString(noPathStatus_C) then
+                    runNoPath_V := runNoPath_V - 1
+                end if,
+                if tuple(folder_C, _, _) = wsFE_SourceList():tryGetSourceItemGroup(NodeID) then
+                    wsFE_SourceList():showPerformStatus(toString(NodeID),ws_Events():getString(excludedStatus_C),"0","0","")
+                else
+                    wsFE_SourceList():sourceList_P:deleteItem(NodeID)
+                end if
+                ],
+            TotalItems = wSFE_SourceList():sourceList_P:getItemCount(),
+            wsFE_Form():progress(4, string::format("%: %d", ws_Events():getString(sourceInGroup_C), TotalItems)),
+            wsFE_Form():progress(3, string::format("%: %d/%d (D: %d, F: %d, NF: %d)",
+                                                                            ws_Events():getString(totalReady_C),
+                                                                            runDone_V + runFailed_V + runNoPath_V,
+                                                                            TotalItems,
+                                                                            runDone_V, runFailed_V, runNoPath_V)),
+            NewFocusID = wsFE_SourceList():sourceList_P:getFocus(),
+            if listViewControl::itemId_null <>  NewFocusID then
+                wsFE_SourceList():sourceList_P:selectAndFocused(NewFocusID)
             end if,
-            if tuple(folder_C, _, _) = wsFE_SourceList():tryGetSourceItemGroup(NodeID) then
-                wsFE_SourceList():showPerformStatus(toString(NodeID),ws_Events():getString(excludedStatus_C),"0","0","")
-            else
-                wsFE_SourceList():sourceList_P:deleteItem(NodeID)
-            end if
-            ],
-        TotalItems = wSFE_SourceList():sourceList_P:getItemCount(),
-        wsFE_Form():progress(4, string::format("%: %d", ws_Events():getString(sourceInGroup_C), TotalItems)),
-        wsFE_Form():progress(3, string::format("%: %d/%d (D: %d, F: %d, NP: %d, NR: %d)",
-                                                                        ws_Events():getString(totalReady_C),
-                                                                        runDone_V + runFailed_V + runNoPath_V + runNoRule_V,
-                                                                        TotalItems,
-                                                                        runDone_V, runFailed_V, runNoPath_V, runNoRule_V)),
-        NewFocusID = wsFE_SourceList():sourceList_P:getFocus(),
-        if listViewControl::itemId_null <>  NewFocusID then
-            wsFE_SourceList():sourceList_P:selectAndFocused(NewFocusID)
-        end if,
-        notify(methodRequest,deleteSourceList_C,[namedValue(nodeIDList_C,string(toString(ListSelectedStr)))|NodePath]),
-        succeed().
-    removeSource().
+            notify(methodRequest,deleteSourceList_C,[namedValue(nodeIDList_C,string(toString(ListSelectedStr)))|NodePath]),
+            succeed()
+        end if.
 
 clauses
     addFromFolder():-
@@ -432,7 +437,6 @@ clauses
         runDone_V := 0,
         runFailed_V := 0,
         runNoPath_V := 0,
-        runNoRule_V := 0,
         showItemID_F := toTerm(ItemIDSelected),
         notify(methodRequestChain,moveSourceUp_C,
                 [
@@ -451,7 +455,6 @@ clauses
         runDone_V := 0,
         runFailed_V := 0,
         runNoPath_V := 0,
-        runNoRule_V := 0,
         showItemID_F := toTerm(ItemIDSelected),
         notify(methodRequestChain,moveSourceDown_C,
                 [
@@ -520,24 +523,28 @@ clauses
     execRun(ItemIDListSelected) :-
         if tuple(SourceNodePath,_ObjPAth) = wsFE_SourceTree():tryGetSelectedNodePath() then
             RequestDataList=list::append([namedValue(nodeId_C,string(NodeID))||NodeID=list::getMember_nd(ItemIDListSelected)],[namedValue(emptyString_C,none)|SourceNodePath]),
-            notify(methodRequest,execSourceList_C, RequestDataList)
+            notify(methodRequest, execSourceList_C, RequestDataList)
         end if.
 
 clauses
-    run(TrueIfReRun,ItemIDListSelected) :-
-        if TrueIfReRun=false then
-            runMode_V:=run_C
-        else
-            runMode_V:=reRun_C
-        end if,
+    invoke(Index, TrueIfAll, ItemIDListSelected):-
         tuple(SourceNodePath,_ObjPAth)=wsFE_SourceTree():tryGetSelectedNodePath(),
         !,
-        ItemIDListQueue = wsFE_SourceList():setAllInQueue(ItemIDListSelected),
+        ItemIDListQueue = wsFE_SourceList():setAllInQueue(ItemIDListSelected, Index, TrueIfAll),
         wsFE_Form():progressBar_activate(list::length(ItemIDListQueue)),
+        runMode_V := toString(Index),
         RequestDataList=list::append([namedValue(runMode_V,string(NodeID))||NodeID=list::getMember_nd(ItemIDListQueue)],[namedValue(emptyString_C,none)|SourceNodePath]),
-        notify(methodRequestChain,runSourceList_C,RequestDataList).
-    run(_TrueIfReRun,_ItemIDListSelected) :-
-        exception::raise_User("wsFE_Tasks::run(): Unexpected alternative").
+        notify(methodRequestChain, invokeSourceList_C,RequestDataList).
+    invoke(_Index, _TrueIfAll, _ItemIDListSelected).
+
+clauses
+    checkFiles():-
+        if tuple(SourceNodePath,_ObjPAth) = wsFE_SourceTree():tryGetSelectedNodePath() then
+            notify(methodRequestChain, checkSourceList_C, SourceNodePath)
+        end if.
+
+clauses
+    run(_TrueIfReRun,_ItemIDListSelected).
 
 clauses
     continueRun():-
@@ -546,7 +553,7 @@ clauses
         ItemIDListQueue = wsFE_SourceList():getAllInQueue(),
         wsFE_Form():progressBar_activate(list::length(ItemIDListQueue)),
         RequestDataList=list::append([namedValue(runMode_V,string(NodeID))||NodeID=list::getMember_nd(ItemIDListQueue)],[namedValue(emptyString_C,none)|SourceNodePath]),
-        notify(methodRequestChain,runSourceList_C,RequestDataList).
+        notify(methodRequestChain,continueInvokeSourceList_C,RequestDataList).
     continueRun():-
         exception::raise_User("wsFE_Tasks::continueRun(): Unexpected alternative").
 
@@ -597,14 +604,13 @@ clauses
         RunDone=namedValue::getNamed_integer(PerformParams,runDone_C),
         RunFailed=namedValue::getNamed_integer(PerformParams,runFailed_C),
         RunNoPath=namedValue::getNamed_integer(PerformParams,runNoPath_C),
-        RunNoRule=namedValue::getNamed_integer(PerformParams,runNoRule_C),
-        RunStatusMessage=string::format("%s: %d/%d (D: %d, F: %d, NP: %d, NR: %d)",
+        RunStatusMessage=string::format("%s: %d/%d (D: %d, F: %d, NF: %d)",
                                                             StatusPrefix,
-                                                            RunDone + RunFailed + RunNoPath + RunNoRule,
+                                                            RunDone + RunFailed + RunNoPath,
                                                             RunTotalCount,
-                                                            RunDone, RunFailed, RunNoPath, RunNoRule),
+                                                            RunDone, RunFailed, RunNoPath),
         wsFE_Form():progress(3, RunStatusMessage),
-        wsFE_Form():progressBar_progress(RunDone + RunFailed + RunNoPath + RunNoRule),
+        wsFE_Form():progressBar_progress(RunDone + RunFailed + RunNoPath),
         if RunFile = namedValue::tryGetNamed_string(PerformParams,runSourceFile_C) then
             if string::hasPrefixIgnoreCase(RunFile, "$(", _),
             string::splitStringBySeparators(RunFile, ")", Head, _, File1) then
@@ -622,13 +628,6 @@ clauses
         wsFE_Form():progress(1, RunningMessage).
 
 clauses
-    showVirtualDir(PerformResultParams):-
-        _ = virtualDirList::display(wsFE_Form(), wsFE_P, PerformResultParams),
-        if tuple(SourceNodePath,_ObjPAth)=wsFE_SourceTree():tryGetSelectedNodePath() then
-            showNodeContent(SourceNodePath)
-        end if.
-
-clauses
     defineMacroSymbols(PerformParams):-
         TitleList =
                 [
@@ -640,17 +639,15 @@ clauses
                 namedValue("ttlEditVirtDir", string(ws_Events():getString(ttlEditVirtDit))),
                 namedValue("txtName", string(ws_Events():getString(txtName))),
                 namedValue("txtDir", string(ws_Events():getString(txtDir))),
-                namedValue("txtError", string(ws_Events():getString(txtError)))
+                namedValue("txtError", string(ws_Events():getString(txtError))),
+                namedValue("msgFormat", string(ws_Events():getString(msgFormat)))
                 ],
-        _=[""||
-            namedValue(Name,string(DirValue)) in PerformParams,
+        foreach namedValue(Name,string(DirValue)) in PerformParams do
             if some(NewMacroDef) = editVirtualDir::display(wsFE_Form(), Name, DirValue, TitleList) then
                 tuple(NewName,NewValue) = NewMacroDef,
                 notify(methodRequest,defineMacroSymbol_C,[namedValue(NewName,string(NewValue))])
-            else
-%                stdio::writef(@"% <%s>", ws_Events():getString(userRefusedVN_C), Name),stdio::nl()
             end if
-        ].
+        end foreach.
 
 clauses
     writeMessage([namedValue(_,string(Message))]):-
@@ -666,11 +663,21 @@ clauses
         wsFE_Form():setLocalExtOptionsList(PerformParams).
 
     saveLocalOptions(PerformParams):-
-        notify(methodRequest,saveLocalExtOptions_C, PerformParams).
+        notify(methodRequest, saveLocalExtOptions_C, PerformParams).
+
+    showLocalOptions():-
+        notify(methodRequest, wsBE_GetWSVariablesForLO_C, []).
 
 clauses
     showSettingsDialog(PerformParams):-
         _ = wsfe_Settings::display(wsFE_Form(), wsFE_P, PerformParams).
+
+    showLocalOptionsDialog(PerformParams):-
+        wsFE_Form():showLocalOptionsDialog(PerformParams).
+
+clauses
+    updateWSVariables(PerformParams):-
+        wsvUpdateResponder_P(PerformParams).
 
 clauses
     updateExtOptions(PerformParams):-
@@ -779,7 +786,17 @@ clauses
         end if.
 
 clauses
+    help():-
+        mainExe::getFilename(Path, _),
+        HelpPath = filename::createPath(Path, @"wsmAppData\"),
+        HelpFile = filename::setPath(ws_Events():getString(helpFile), HelpPath),
+        shell_api::shellOpen(HelpFile).
+
+constants
+    aboutShadow_C:binary=#bininclude(@"Doc\VicShadow.jpg").
+clauses
     about():-
+        Icon=icon::createFromImages([bitmap::createFromBinary(aboutShadow_C)]),
         DlgObj=aboutDialog::new(wsFE_Form()),
         _Font1=vpi::fontCreate(ff_Times,[fs_Bold ],11),
 
@@ -787,16 +804,17 @@ clauses
         DlgObj:productFamily_P:="SPBrSolutions",
 
         DlgObj:productNameFont_P:=vpi::fontCreate(ff_Times,[fs_Bold ],11),
-        DlgObj:productName_P:="WorkSpace Manager\nVersion 1.0",
+        DlgObj:productName_P:="WorkSpace Manager\nVersion 2.0",
 
         DlgObj:copyrightFont_P:=vpi::fontCreate(ff_Times,[fs_Bold ],11),
-        DlgObj:copyright_P:="(c) Victor Yukhtenko",
+        DlgObj:copyright_P:="(c) Prolog Development Center SPb.",
 
         DlgObj:companyNameFont_P:=vpi::fontCreate(ff_Helvetica,[],11),
-        DlgObj:companyName_P:="Prolog Development Center SPb",
+        DlgObj:companyName_P:="Developed by Victor Yukhtenko\nAssisted by Boris Belov",
 
-        DlgObj:contentFont_P:=vpi::fontCreate(ff_Helvetica,[fs_Bold],10),
-        DlgObj:content_P:="WorkSpace manager.\nHelps to create a list of executable entties, which must be executed.",
+        DlgObj:contentFont_P:=vpi::fontCreate(ff_Helvetica,[],10),
+        DlgObj:content_P:="WorkSpace manager.\nProvides the creation of the structured list of files of different types, which are used daily.\nAny of these files may be handled in the special way.\n\nVisual Prolog is a registered trademark of Prolog Development Center A/S (Denmark).",
+        DlgObj:image_P:=Icon:getImage(64,65),
 
         DlgObj:show().
 

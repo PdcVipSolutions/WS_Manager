@@ -13,9 +13,8 @@ constants
 
 constants
     flowChartImg_C:binary=#bininclude(@"WS_manager\Common\AppFrontEnd\FE_Icons\SmallCircle.png").
-
-    folderImg_C:binary=#bininclude(@"WS_manager\Common\AppFrontEnd\PNGwrk\folder-16-000000.png").
-    groupImg_C:binary=#bininclude(@"WS_manager\Common\AppFrontEnd\PNGwrk\squares-16-000000.png").
+    folderImg_C:binary=#bininclude(@"WS_manager\Common\AppFrontEnd\FE_Icons\folder-16-000000.png").
+    groupImg_C:binary=#bininclude(@"WS_manager\Common\AppFrontEnd\FE_Icons\squares-16-000000.png").
 
 clauses
     new(FrontEndObj,TreeControl):-
@@ -44,7 +43,6 @@ clauses
         treeControl_P:dragBeginResponder := dragBeginResponder,
         treeControl_P:dropResponder := dropResponder,
         treeControl_P:endDropEvent:addListener(endDropListener),
-        treeControl_P:addExpandEndListener(expandEndListener),
         _OldResponder2=treeControl_P:setSelectBeginResponder(nodeSelectedResponder).
 
 predicates
@@ -101,7 +99,7 @@ clauses
     selectNodePath(_, ParentNode):-
         treeControl_P:select(ParentNode).
 
-predicates
+class predicates
     onNodeEditBegin : nodeEditBeginResponder.
 clauses
     onNodeEditBegin(_Node, _) = allowEdit.
@@ -325,6 +323,12 @@ clauses
     removeTreeNode(_Parameters).
 
 predicates
+    onMenuCheckFiles : menuItemListener.
+clauses
+    onMenuCheckFiles(_, _):-
+        wsFE_Tasks():checkFiles().
+
+predicates
     onMenuRenameNode : menuItemListener.
 clauses
     onMenuRenameNode(_, _) :-
@@ -378,9 +382,9 @@ clauses
         ChildList=[Child||Child=Parent:getChild_nd()],
         ListLen=list::length(ChildList),
         Position=list::tryGetIndex(Node,ChildList),
-        tuple(ToContainer,ToPosition)=tryDefineLocation(Direction,Parent,ChildList,ListLen,Position),
-        tuple(SourceNodePath,_DragNodePathObj)=getNodePath(Node,tuple([],[])),
-        tuple(TargetNodePath,_DropNodePathObj)=getNodePath(ToContainer,tuple([],[])),
+        tuple(ToContainer,ToPosition) = tryDefineLocation(Direction,Parent,ChildList,ListLen,Position),
+        tuple(SourceNodePath,_DragNodePathObj) = getNodePath(Node,tuple([],[])),
+        tuple(TargetNodePath,_DropNodePathObj) = getNodePath(ToContainer,tuple([],[])),
         moveNode(ToPosition,Node,ToContainer,treeControl_P),
         if ToPosition=spbTree::left then
             wsFE_Tasks():moveAbove(SourceNodePath,TargetNodePath)
@@ -392,7 +396,7 @@ clauses
             wsFE_Tasks():moveOnTop(SourceNodePath,TargetNodePath)
         end if.
 
-predicates
+class predicates
     tryDefineLocation:(spbTree::place Direction,treeNode_std Parent,treeNode_std* ChildList,integer ListLen,integer Position)->tuple{treeNode_std ToContainer,spbTree::place ToPosition} determ.
 clauses
     tryDefineLocation(spbTree::right,Parent,_ChildList,_ListLen,Position)=tuple(ToContainer,ToPosition):- % Move Up
@@ -493,6 +497,7 @@ clauses
         treeControl_P:addMenuItemListener(menu_del_node, onMenuDeleteNode),
         treeControl_P:addMenuItemListener(menu_rename_node, onMenuRenameNode),
         treeControl_P:addMenuItemListener(menu_Explore, onMenuFolderExplore),
+        treeControl_P:addMenuItemListener(menu_check_files, onMenuCheckFiles),
         fail.
     addMenuListeners():- % Node DragAndDrop Listeners
         treeControl_P:addMenuItemListener(menu_include, onDropInside),
@@ -509,6 +514,7 @@ constants
     menu_del_node : menuTag = 10004.
     menu_rename_node : menuTag = 10005.
     menu_Explore : menuTag = 10006.
+    menu_check_files : menuTag = 10007.
 
 constants % DropMenuOperation_C
     menu_include : menuTag = 10100.
@@ -537,7 +543,8 @@ clauses
                 txt(menu_add_folder, ws_Events():getString(cmdAddFolder_C), noAccelerator, b_true, mis_none, []),
                 txt(menu_del_node, ws_Events():getString(cmdDeleteNode_C), noAccelerator, b_true, mis_none, []),
                 txt(menu_rename_node, ws_Events():getString(pmnRename), noAccelerator, b_true, mis_none, []),
-                txt(menu_Explore, ws_Events():getString(pmnExplore), noAccelerator, b_true, mis_none, [])
+                txt(menu_Explore, ws_Events():getString(pmnExplore), noAccelerator, b_true, mis_none, []),
+                txt(menu_check_files, ws_Events():getString(pmnCheckFile), noAccelerator, b_true, mis_none, [])
                 ]
         else
             MenuItemList = %treeNodeOperation_C
@@ -547,7 +554,8 @@ clauses
                 txt(menu_add_folder, ws_Events():getString(cmdAddFolder_C), noAccelerator, b_true, mis_none, []),
                 txt(menu_add_childfolder, ws_Events():getString(cmdAddSubFolder_C), noAccelerator, b_true, mis_none, []),
                 txt(menu_del_node, ws_Events():getString(cmdDeleteNode_C), noAccelerator, b_true, mis_none, []),
-                txt(menu_rename_node, ws_Events():getString(pmnRename), noAccelerator, b_true, mis_none, [])
+                txt(menu_rename_node, ws_Events():getString(pmnRename), noAccelerator, b_true, mis_none, []),
+                txt(menu_check_files, ws_Events():getString(pmnCheckFile), noAccelerator, b_true, mis_none, [])
                 ]
         end if,
         PntForm = treeControl_P:mapPointTo(treeControl_P, PntTree),
@@ -563,7 +571,6 @@ class predicates
     dragBeginResponder : dragBeginResponder.
 clauses
     dragBeginResponder(_DragNode) = acceptDrag(vpiDomains::cursor_Uparrow, vpiDomains::cursor_Cross).
-%    dragBeginResponder(_DragNode) = denyDrag.
 
 class predicates
     dropResponder : dropResponder.
@@ -602,11 +609,6 @@ clauses
         PntForm = treeControl_P:mapPointTo(treeControl_P, Pnt),
         treeControl_P:menuPopup(dynmenu(MenuItemList), PntForm, align_left).
     endDropListener(_DropEvent).
-
-predicates
-    expandEndListener : expandEndListener.
-clauses
-    expandEndListener(_Source, _Node, _NewStatus).
 
 domains
     dropSolution=

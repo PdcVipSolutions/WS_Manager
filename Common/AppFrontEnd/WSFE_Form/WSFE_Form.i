@@ -13,10 +13,11 @@ predicates
 
 properties
     progress : core::predicate{integer,string}.
-    ribbonControl_ctl:ribboncontrol.
-    wsFE_Command_P:wsFE_Command.
+    ribbonControl_P : ribboncontrol (o).
+    wsFE_Command_P : wsFE_Command.
     selectNode_V:namedValue*.
-    localOptionsPanel_P :groupBox.
+    localOptionsPanel_P : groupBox.
+    prevSelectExt : string.
 
 predicates
     progressBar_activate : (positive Count).
@@ -26,7 +27,8 @@ predicates
 predicates
     setStatusBar:().
     setTitle : (string WS_FileName,boolean TrueIfReadOnly).
-    showLocalOptionsPanel : ().
+    showLocalOptionsDialog : ().
+    showLocalOptionsDialog : (namedValue* PerformParams).
     showLocalOptionsPanel : (boolean IsShown).
 
 predicates
@@ -36,6 +38,7 @@ predicates
     setExtOptionsList:(namedValue* PerformParams).
     showSourceLocalOptions : ().
     setLocalExtOptionsList:(namedValue* PerformParams).
+    tryGetStatusCheck : (integer Index,string File,boolean [out] AllPossible) -> boolean StatusCheck determ.
 
 predicates
     getSourceFilterList : () -> menuCommand::menuItem*.

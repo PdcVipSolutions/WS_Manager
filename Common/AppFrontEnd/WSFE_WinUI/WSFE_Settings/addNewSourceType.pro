@@ -6,7 +6,6 @@ implement addNewSourceType
 
 facts
     is_Ok : boolean := false.
-
 clauses
     getReturnValue() = if true = is_Ok then some(tuple(editName_ctl:getText(), editValue_ctl:getText())) else core::none end if.
 
@@ -23,6 +22,10 @@ clauses
         dialog::new(Parent),
         generatedInitialize(),
         setTitles(TitleList).
+
+clauses
+    editName_P() = editName_ctl.
+    editValue_P() = editValue_ctl.
 
 predicates
     setTitles : (namedValue* TitleList).
@@ -41,7 +44,8 @@ clauses
     onOkClick(_Source) = button::defaultAction :-
         is_Ok := true.
 
-% This code is maintained automatically, do not update it manually. 13:25:15-27.7.2016
+% This code is maintained automatically, do not update it manually.
+%  13:16:15-10.10.2018
 
 facts
     editName_ctl : editControl.
@@ -67,23 +71,24 @@ clauses
         editName_ctl:setWidth(76),
         ok_ctl := button::newOk(This),
         ok_ctl:setText("&OK"),
-        ok_ctl:setPosition(127, 36),
+        ok_ctl:setPosition(188, 36),
         ok_ctl:setSize(56, 12),
         ok_ctl:defaultHeight := false,
         ok_ctl:setAnchors([control::right, control::bottom]),
         ok_ctl:setClickResponder(onOkClick),
         cancel_ctl := button::newCancel(This),
         cancel_ctl:setText("&Cancel"),
-        cancel_ctl:setPosition(191, 36),
+        cancel_ctl:setPosition(252, 36),
         cancel_ctl:setSize(56, 12),
         cancel_ctl:defaultHeight := false,
         cancel_ctl:setAnchors([control::right, control::bottom]),
         help_ctl := button::new(This),
         help_ctl:setText("&Help"),
-        help_ctl:setPosition(255, 36),
-        help_ctl:setSize(56, 12),
-        help_ctl:defaultHeight := false,
+        help_ctl:setPosition(4, 36),
+        help_ctl:setWidth(56),
+        help_ctl:defaultHeight := true,
         help_ctl:setAnchors([control::right, control::bottom]),
+        help_ctl:setVisible(false),
         value_ctl := textControl::new(This),
         value_ctl:setText("Extensions List:"),
         value_ctl:setPosition(86, 4),
@@ -95,7 +100,7 @@ clauses
         editValue_ctl := editControl::new(This),
         editValue_ctl:setText(""),
         editValue_ctl:setPosition(84, 16),
-        editValue_ctl:setWidth(226),
+        editValue_ctl:setWidth(224),
         editValue_ctl:setTabStop(false).
 % end of automatic code
 end implement addNewSourceType

@@ -1,6 +1,9 @@
 ﻿#include @"ws_manager\common\AppFrontEnd\WSFE_Tasks\WSFE_Tasks.ph"
 
 % privately used packages
+#include @"pfc\windowsApi\Shell_api\Shell_api.ph"
+#include @"pfc\application\Exe\exe.ph"
+#include @"pfc\registry\registry.ph"
 #include @"Packs\Logic\trace\trace.ph"
 #include @"pfc\multiThread\monitorQueue\monitorQueue.ph"
 #include @"pfc\application\useExe\useExe.ph"

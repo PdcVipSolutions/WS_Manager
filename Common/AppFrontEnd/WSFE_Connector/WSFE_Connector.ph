@@ -1,5 +1,6 @@
 ﻿#requires @"ws_manager\common\AppFrontEnd\WSFE_Connector\WSFE_Connector.pack"
 % publicly used packages
+#include @"WS_manager\Common\AppFrontEnd\wsFE_Images\wsFE_Images.ph"
 #include @"pfc\multiThread\monitorQueue\monitorQueue.ph"
 #include @"ws_manager\common\AppFrontEnd\WSFE_SourceList\WSFE_SourceList.ph"
 #include @"ws_manager\common\AppFrontEnd\WSFE_SourceTree\WSFE_SourceTree.ph"

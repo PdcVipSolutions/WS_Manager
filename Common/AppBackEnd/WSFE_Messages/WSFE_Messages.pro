@@ -12,6 +12,13 @@ clauses
 predicates
     wsFE_Message:event3{integer CommandID, namedValue* Parameters,object TaskQueue}::listener.
 clauses
+%    wsFE_Message(CommandID, Params, _TaskQueue):-
+%        T=trace::get("T"),
+%        T:wf("cmd [%] par [%]",CommandID,Params),
+%        fail.
+    wsFE_Message(frontEndVipVirtualDir_C, VipVirtualDir, _TaskQueue):-
+        !,
+        wSBE_Tasks():setVipVirtualDir(VipVirtualDir).
     wsFE_Message(frontEndStarted_C,[],TaskQueue):-
         !,
         wSBE_Tasks():wsBE_InitLog(TaskQueue),
@@ -99,21 +106,44 @@ clauses
         notify(wsBE_EndOfData_C, [],TaskQueue).
     wsFE_Message(moveSourceTop_C, [namedValue(itemSelected_C,string(ItemIDSelected))|SourceNodePath],TaskQueue):-
         !,
-        wsBE_Tasks():moveSourceToTree(true, ItemIDSelected, SourceNodePath,TaskQueue).
+        wsBE_Tasks():moveSourceToTree(true, ItemIDSelected, SourceNodePath,TaskQueue),
+        notify(wsBE_EndOfData_C, [],TaskQueue).
     wsFE_Message(moveSourceEnd_C, [namedValue(itemSelected_C,string(ItemIDSelected))|SourceNodePath],TaskQueue):-
         !,
-        wsBE_Tasks():moveSourceToTree(false, ItemIDSelected, SourceNodePath,TaskQueue).
+        wsBE_Tasks():moveSourceToTree(false, ItemIDSelected, SourceNodePath,TaskQueue),
+        notify(wsBE_EndOfData_C, [],TaskQueue).
     wsFE_Message(cloneSourceTop_C, [namedValue(itemSelected_C,string(ItemIDSelected))|SourceNodePath],TaskQueue):-
         !,
-        wsBE_Tasks():cloneSourceToTree(true, ItemIDSelected, SourceNodePath,TaskQueue).
+        wsBE_Tasks():cloneSourceToTree(true, ItemIDSelected, SourceNodePath,TaskQueue),
+        notify(wsBE_EndOfData_C, [],TaskQueue).
     wsFE_Message(cloneSourceEnd_C, [namedValue(itemSelected_C,string(ItemIDSelected))|SourceNodePath],TaskQueue):-
         !,
-        wsBE_Tasks():cloneSourceToTree(false, ItemIDSelected, SourceNodePath,TaskQueue).
+        wsBE_Tasks():cloneSourceToTree(false, ItemIDSelected, SourceNodePath,TaskQueue),
+        notify(wsBE_EndOfData_C, [],TaskQueue).
+
+    wsFE_Message(invokeSourceList_C, SourceList_TargetPath,TaskQueue):-
+        list::splitAfter({(Elem):-Elem=namedValue("",none)},SourceList_TargetPath,SourceListDirty,TargetPath),
+        SourceIDList=list::remove(SourceListDirty,namedValue("",none)),
+        !,
+        wSBE_Tasks():perform(SourceIDList,TargetPath,false,TaskQueue),
+        notify(wsBE_EndOfData_C, [],TaskQueue).
+    wsFE_Message(continueInvokeSourceList_C, SourceList_TargetPath,TaskQueue):-
+        list::splitAfter({(Elem):-Elem=namedValue("",none)},SourceList_TargetPath,SourceListDirty,TargetPath),
+        SourceIDList=list::remove(SourceListDirty,namedValue("",none)),
+        !,
+        wSBE_Tasks():perform(SourceIDList,TargetPath,true,TaskQueue),
+        notify(wsBE_EndOfData_C, [],TaskQueue).
+
+    wsFE_Message(checkSourceList_C, TargetPath,TaskQueue):-
+        !,
+        wSBE_Tasks():checkFile(TargetPath,TaskQueue),
+        notify(wsBE_EndOfData_C, [],TaskQueue).
+
     wsFE_Message(runSourceList_C, SourceList_TargetPath,TaskQueue):-
         list::splitAfter({(Elem):-Elem=namedValue("",none)},SourceList_TargetPath,SourceListDirty,TargetPath),
         SourceIDList=list::remove(SourceListDirty,namedValue("",none)),
         !,
-        wSBE_Tasks():perform(SourceIDList,TargetPath,TaskQueue),
+        wSBE_Tasks():perform(SourceIDList,TargetPath,false,TaskQueue),
         notify(wsBE_EndOfData_C, [],TaskQueue).
     wsFE_Message(pauseRun_C, [namedValue("pause",boolean(Pause))],TaskQueue):-
         !,
@@ -125,19 +155,22 @@ clauses
         notify(wsBE_EndOfData_C, [],TaskQueue).
     wsFE_Message(resetStatus_C, NodePath,TaskQueue):-
         !,
-        wSBE_Tasks():resetStatus(NodePath,TaskQueue).
+        wSBE_Tasks():resetStatus(NodePath,TaskQueue),
+        notify(wsBE_EndOfData_C, [],TaskQueue).
     wsFE_Message(selResetStatus_C, SourceList_TargetPath,TaskQueue):-
         list::splitAfter({(Elem):-Elem=namedValue("",none)},SourceList_TargetPath,SourceListDirty,TargetPath),
         SourceIDList=list::remove(SourceListDirty,namedValue("",none)),
         !,
-        wSBE_Tasks():selResetStatus(SourceIDList, TargetPath,TaskQueue).
+        wSBE_Tasks():selResetStatus(SourceIDList, TargetPath,TaskQueue),
+        notify(wsBE_EndOfData_C, [],TaskQueue).
     wsFE_Message(openSource_C, [namedValue(nodeId_C,string(NodeIdToOpen))|NodePath],TaskQueue):-
         !,
         wSBE_Tasks():openSource(NodePath,NodeIdToOpen,TaskQueue),
         notify(wsBE_EndOfData_C, [],TaskQueue).
     wsFE_Message(showSourceInTree_C, [namedValue(nodeId_C,string(NodeIdToOpen))],TaskQueue):-
         !,
-        wSBE_Tasks():showSourceInTree(NodeIdToOpen,TaskQueue).
+        wSBE_Tasks():showSourceInTree(NodeIdToOpen,TaskQueue),
+        notify(wsBE_EndOfData_C, [],TaskQueue).
     wsFE_Message(restoreDeletedSource_C, [namedValue(nodeId_C,string(NodeId))],TaskQueue):-
         !,
         wSBE_Tasks():restoreDeletedSource(NodeId),
@@ -165,16 +198,16 @@ clauses
         notify(wsBE_NoData_C, [],TaskQueue).
     wsFE_Message(setupSettings_C, [],TaskQueue):-
         !,
-        wSBE_Tasks():getSettings(TaskQueue).
+        wSBE_Tasks():getSettings(TaskQueue),
+        notify(wsBE_EndOfData_C, [],TaskQueue).
     wsFE_Message(getShortName_C, [namedValue(_,string(FullFileName))],TaskQueue):-
         !,
-        wSBE_Tasks():getShortFileName(FullFileName,TaskQueue).
+        wSBE_Tasks():getShortFileName(FullFileName,TaskQueue),
+        notify(wsBE_EndOfData_C, [],TaskQueue).
     wsFE_Message(getFullName_C, [namedValue(_,string(FullFileName))],TaskQueue):-
         !,
-        wSBE_Tasks():getFullFileName(FullFileName,TaskQueue).
-    wsFE_Message(setupVirtualDir_C, [],TaskQueue):-
-        !,
-        wSBE_Tasks():setupVirtualDirList(TaskQueue).
+        wSBE_Tasks():getFullFileName(FullFileName,TaskQueue),
+        notify(wsBE_EndOfData_C, [],TaskQueue).
     wsFE_Message(insertVirtualDir_C, [namedValue(NewName,string(NewDirValue))],TaskQueue):-
         !,
         wSBE_Tasks():insertVirtualDir(NewName, NewDirValue),
@@ -187,6 +220,10 @@ clauses
         !,
         wSBE_Tasks():deleteVirtualDir(Name),
         notify(wsBE_NoData_C, [],TaskQueue).
+    wsFE_Message(setWSVariableFile_C, [namedValue(_,string(NewWSVFile))], TaskQueue):-
+        !,
+        wsBE_Tasks():setWSVariableFile(NewWSVFile),
+        wsBE_Tasks():updateWSVSettings(TaskQueue).
     wsFE_Message(defineMacroSymbol_C, [MacroSymDefinition],TaskQueue):-
         !,
         wSBE_Tasks():addMacroSymbolDefinition(MacroSymDefinition),
@@ -197,27 +234,31 @@ clauses
         notify(wsBE_NoData_C, [],TaskQueue).
     wsFE_Message(updateSourceColors_C, SourceColorList,TaskQueue):-
         !,
-        wSBE_Tasks():updateSourceColors(SourceColorList,TaskQueue).
+        wSBE_Tasks():updateSourceColors(SourceColorList,TaskQueue),
+        notify(wsBE_NoData_C, [],TaskQueue).
     wsFE_Message(updateSelectSourceType_C, SelectSourceType,TaskQueue):-
         !,
         wSBE_Tasks():updateSelectSourceType(SelectSourceType),
         notify(wsBE_NoData_C, [],TaskQueue).
     wsFE_Message(updateExtOptions_C, ExtOptionsValues,TaskQueue):-
         !,
-        wSBE_Tasks():updateExtOptions(ExtOptionsValues,TaskQueue).
+        wSBE_Tasks():updateExtOptions(ExtOptionsValues,TaskQueue),
+        notify(wsBE_NoData_C, [],TaskQueue).
     wsFE_Message(updateUILanguage_C, NewUILanguage,TaskQueue):-
         !,
         wSBE_Tasks():updateUILanguage(NewUILanguage),
         notify(wsBE_NoData_C, [],TaskQueue).
-
     wsFE_Message(handleSourceRun_C, [namedValue(_,string(Line))],TaskQueue):-
         !,
         wSBE_Tasks():handleStreamFrontEnd(false, Line,TaskQueue),
         notify(wsBE_EndOfData_C, [],TaskQueue).
-
     wsFE_Message(endSourceRun_C, _,TaskQueue):-
         !,
         wSBE_Tasks():handleStreamFrontEnd(true, "",TaskQueue),
+        notify(wsBE_EndOfData_C, [],TaskQueue).
+    wsFE_Message(wsBE_GetWSVariablesForLO_C, _,TaskQueue):-
+        !,
+        wSBE_Tasks():getWSVariablesForLO(TaskQueue),
         notify(wsBE_EndOfData_C, [],TaskQueue).
 
     wsFE_Message(EndSourceRun, _,TaskQueue):-

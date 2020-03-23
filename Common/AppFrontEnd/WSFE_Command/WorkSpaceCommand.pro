@@ -1,7 +1,7 @@
 ﻿%
 implement workSpaceCommand
     inherits wsFE_Connector
-    open core, stdio, vpiDomains, treeControl{treeNode_std}, ribbonControl, ws_eventManager,wSFE_Command
+    open core, vpiDomains, treeControl{treeNode_std}, ribbonControl, ws_eventManager,wSFE_Command
 
 facts - command_FB
     newWorkSpaceCmd : command:=erroneous.
@@ -18,7 +18,8 @@ clauses
     new(FrontEnd):-
         wsFE_Connector::new(FrontEnd),
         wsFE_SourceTree():treeControl_P:addSelectEndListener(onTreeNodeSelected),
-        wsFE_SourceList():sourceList_P:addSelectEndListener(onListRowSelected).
+        wsFE_SourceList():sourceList_P:addSelectEndListener(onListRowSelected),
+        wsFE_SourceList():sourceList_P:addGetFocusListener(onSourceListGetFocus).
 
 clauses
     addChangeListener():-
@@ -81,8 +82,6 @@ clauses
     initCommandBlock("workSpaceMenu",Win,_Predicate)=block([  [cmd(workSpaceMenuCmd:id, imageAndText(vertical))]  ]):-
         !,
         workSpaceMenuCmd:=menuCommand::new(Win,"workSpace"),
-%        workSpaceMenuCmd:menuLabel:="workSpace",
-%        workSpaceMenuCmd:tipTitle:=toolTip::tip("workSpace"),
         workSpaceMenuCmd:style :=menuCommand::toolMenu,
         workSpaceMenuCmd:layout:=menuCommand::menuStatic(
             [
@@ -132,9 +131,6 @@ clauses
     initCommandBlock("treeMenu",Win,_Predicate)=block([  [cmd(treeMenuCmd:id, imageAndText(vertical))]  ]):-
         !,
         treeMenuCmd:=menuCommand::new(Win,"treeMenu"),
-%        treeMenuCmd:menuLabel:="treeMenu",
-%        treeMenuCmd:tipTitle:=toolTip::tip("treeMenu"),
-%        treeMenuCmd:tipBody:=toolTip::tip("Win kind of menu button toggles tools in and out. Whenever a new tool is selected, it becomes the default tool shown on menu button."),
         treeMenuCmd:style :=menuCommand::toolMenu,
         treeMenuCmd:layout:=menuCommand::menuStatic(
             [
@@ -159,6 +155,14 @@ clauses
     onListRowSelected(_Source, _ItemId, _Select) :-
         wsFE_Tasks():getSourceLocalOptions(),
         setMenuAbility().
+
+predicates
+    onSourceListGetFocus : window::getFocusListener.
+clauses
+    onSourceListGetFocus(_):-
+        if wsFE_Form():prevSelectExt = "" then
+            wsFE_Tasks():getSourceLocalOptions()
+        end if.
 
 predicates
     setMenuAbility:().
@@ -201,7 +205,7 @@ clauses
 
         end if.
 
-predicates
+class predicates
     dummyRun : (command).
 clauses
     dummyRun(_).

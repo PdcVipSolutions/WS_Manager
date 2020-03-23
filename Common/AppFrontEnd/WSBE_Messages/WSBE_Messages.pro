@@ -13,6 +13,12 @@ clauses
 predicates
     fromBE_Listener:event2{integer CommandID, namedValue* Parameters}::listener.
 clauses
+    fromBE_Listener(weBE_GetVipVirtualDir_C,Msg):-
+        stdio::writef("be: id:[%] msg [%]\n",weBE_GetVipVirtualDir_C,Msg),
+        fail.
+    fromBE_Listener(weBE_GetVipVirtualDir_C, _):-
+        !,
+        wsFE_Tasks():loadVipVirtualDir().
     fromBE_Listener(wsBE_StartedFE, [namedValue(CurrentLng,string(LanguageText))]):-
         !,
         ws_Events():setLaungugeWSM(CurrentLng, LanguageText).
@@ -42,9 +48,6 @@ clauses
         !.
     fromBE_Listener(wsBE_UpdateSourceStatus_C,PerformParams):-
         wsFE_Tasks():showResult(PerformParams),
-        !.
-    fromBE_Listener(wsBE_SetupVirtualDir_C,PerformParams):-
-        wsFE_Tasks():showVirtualDir(PerformParams),
         !.
     fromBE_Listener(wsBE_SetShortName_C,PerformParams):-
         wsFE_Tasks():setShortFileName(PerformParams),
@@ -81,6 +84,12 @@ clauses
         !.
     fromBE_Listener(wsBE_Settings_C,PerformParams):-
         wsFE_Tasks():showSettingsDialog(PerformParams),
+        !.
+    fromBE_Listener(wsBE_GetWSVariablesForLO_C,PerformParams):-
+        wsFE_Tasks():showLocalOptionsDialog(PerformParams),
+        !.
+    fromBE_Listener(wsBE_UpdateWSV_C,PerformParams):-
+        wsFE_Tasks():updateWSVariables(PerformParams),
         !.
     fromBE_Listener(wsBE_ShowSourceInTree_C,PerformParams):-
         wsFE_Tasks():setSourceInTask(PerformParams),

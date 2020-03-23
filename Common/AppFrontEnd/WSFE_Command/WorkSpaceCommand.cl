@@ -6,5 +6,4 @@ class workSpaceCommand : workSpaceCommand
 constructors
     new : (ws_FrontEnd FrontEnd).
 
-
 end class workSpaceCommand

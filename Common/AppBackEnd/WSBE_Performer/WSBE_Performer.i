@@ -16,9 +16,10 @@ properties
     wsBE_XmlDocument_P : xmlDocument (o).
 
 predicates
-    runSource : (xmlElement SourceObj,string RunMode, string FullFileName,object TaskQueueObj).
+    runSource : (xmlElement SourceObj,string RunMode,string FullFileName,object TaskQueueObj).
     stopRun:(object TaskQueueObj).
     execSource : (xmlElement SourceObj, string FullFileName,object TaskQueueObj).
+    checkFile : (xmlElement SourceObj,string FullFileName,object TaskQueueObj).
 
 predicates
     openSource:(xmlElement SourceObj, string SourceFileName,object TaskQueueObj).

@@ -59,8 +59,11 @@ predicates
     addSourcesFromFolder:(namedValue* FolderNameAndNodePath,object TaskQueueObj).
 
 predicates
-    perform:(namedValue* SourceIDList,namedValue* TargetPath,object TaskQueueObj).
+    perform:(namedValue* SourceIDList,namedValue* TargetPath,boolean IsContinue,object TaskQueueObj).
     doRunSource : (object TaskQueueObj).
+
+predicates
+    checkFile:(namedValue* TargetPath,object TaskQueueObj).
 
 predicates
     pauseRun : (boolean Pause,object TaskQueueObj).
@@ -88,7 +91,7 @@ predicates
     restoreDeletedSource:(string NodeID).
 
 predicates
-    setupVirtualDirList:(object TaskQueueObj).
+%    setupVirtualDirList:(object TaskQueueObj).
     getShortFileName:(string FullFileName,object TaskQueueObj).
     getFullFileName:(string ShortFileName,object TaskQueueObj).
 
@@ -110,9 +113,12 @@ predicates
     updateVirtualDir : (string Name,string NewDirValue).
     deleteVirtualDir : (string Name).
     addMacroSymbolDefinition:(namedValue DefinedMacroSym).
-
+    setVipVirtualDir : (namedValue* VipVirtualDir).
+    setWSVariableFile : (string NewWSVFile).
 predicates
     getSettings:(object TaskQueueObj).
+    updateWSVSettings:(object TaskQueueObj).
+    getWSVariablesForLO:(object TaskQueueObj).
 
 predicates
     updateOptionsNotifyFE : (namedValue*,object TaskQueueObj).

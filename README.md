@@ -1,2 +1,3 @@
-[ReadMeEn.html]https://pdcvipsolutions.github.io/WorkSpaceManager/HelpEn.html
-[ReadmeRu.html]https://pdcvipsolutions.github.io/WorkSpaceManager/HelpRu.html
+[ReadMeEn](https://pdcvipsolutions.github.io/WorkSpaceManager/HelpEn.html "link title")
+
+[ReadmeRu](https://pdcvipsolutions.github.io/WorkSpaceManager/HelpRu.html "link title")

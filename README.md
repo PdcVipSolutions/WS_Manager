@@ -1,3 +1,2 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
-<html><head><meta content="text/html; charset=ISO-8859-1" http-equiv="content-type"><title>ReadMe</title></head>
-<body><br>See <a href="Doc/ReadMeEn.html">ReadmeEn.html in English</a> <br>See <a href="Doc/ReadMeRu.html">ReadmeRu.html in Russian</a> <br><br></body></html>
+[ReadMeEn.html]https://pdcvipsolutions.github.io/WorkSpaceManager/HelpEn.html
+[ReadmeRu.html]https://pdcvipsolutions.github.io/WorkSpaceManager/HelpRu.html

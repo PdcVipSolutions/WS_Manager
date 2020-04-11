@@ -1,7 +1,7 @@
 # WorkSpace Manager
 **Open Source (MIT license)**
 
-Created using Visual Prolog v.9 build 902 
+Created using Visual Prolog v.9 build 904 
 
 ### What is WS_Manager
 [ReadMeEn](https://pdcvipsolutions.github.io/WorkSpaceManager/HelpEn.html "link title")
